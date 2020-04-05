@@ -17,3 +17,12 @@ if [ ! -d $BUILD_DIR ]; then
   mkdir $BUILD_DIR
 fi
 
+#
+# Style sheet
+#
+
+# Generate style sheet from SCSS (Sass)
+echo "[I] Compile CSS"
+sassc scss/melo.scss $BUILD_DIR/melo.css
+print_status $?
+
