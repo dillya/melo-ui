@@ -1,0 +1,58 @@
+/* Sheet */
+
+$sheet-header-padding-x: 0.5rem !default;
+$sheet-header-padding-y: 0.25rem !default;
+
+// Sheet / window displayed on complete screen
+.sheet {
+  background-color: $body-bg;
+  display: flex;
+  flex-direction: column;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: ($zindex-overlay + 1);
+
+  // Show by translating from bottom
+  transform: translateY(100%);
+  transition: $transition-base;
+}
+
+// Sheet header
+.sheet-header {
+  background-color: $nav-bg;
+  padding: $sheet-header-padding-y $sheet-header-padding-x;
+  border-bottom: $border-width solid $border-color;
+  align-items: center;
+
+  .sheet-title {
+    flex-grow: 1;
+    text-align: center;
+  }
+}
+
+// Sheet body
+.sheet-body {
+  flex: 1;
+}
+
+// Sheet footer
+.sheet-footer {
+  background-color: $nav-bg;
+  border-top: $border-width solid $border-color;
+  justify-content: space-around;
+}
+
+// Make scrollable sheet
+.sheet-scroll {
+  overflow: hidden;
+
+  .sheet-body {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}

@@ -3,11 +3,91 @@
  * Copyright (C) 2020 Alexandre Dilly <dillya@sparod.com>
  */
 
+// Theme
+$body-bg: #222222;
+$body-color: #dbdbdb;
+$border-color: #4e4e4e;
+$card-bg: #333333;
+$card-hover-bg: #444444;
+$input-bg: $body-bg;
+$input-color: $body-color;
+$link-color: $body-color;
+$modal-header-bg: #333333;
+$modal-content-bg: $body-bg;
+$modal-content-color: $body-color;
+$modal-content-border-color: $border-color;
+$nav-bg: $card-bg;
+$nav-active-color: #1061a6;
+$player-bar-bg: $card-bg;
+$popover-bg: $body-bg;
+$side-bar-bg: $body-bg;
+$top-bar-bg: $card-bg;
+
+
+// Unit sizes
+$player-bar-height: 5rem;
+$playlist-bar-width: 400px;
+$side-bar-width: 220px;
+$top-bar-height: 3rem;
+
+// Bootstrap nav
+$navbar-padding-y: .25rem;
+
+// Bootstrap nav-tabs
+$nav-tabs-border-width: 1px;
+$nav-tabs-border-color: $border-color;
+
+// Bootstrap card
+$card-border-color: $border-color;
+$card-spacer-x: .5rem;
+
+// Bootstrap popover
+$popover-border-color: $border-color;
+$popover-arrow-outer-color: $border-color;
+$popover-arrow-color: $popover-bg;
+$popover-body-color: $popover-bg;
+
 // Bootstrap base
 @import "../bootstrap/scss/functions";
 @import "../bootstrap/scss/variables";
 @import "../bootstrap/scss/mixins";
 @import "../bootstrap/scss/reboot";
+@import "../bootstrap/scss/type";
+
+// Bootstrap components
+@import "../bootstrap/scss/buttons";
+@import "../bootstrap/scss/card";
+@import "../bootstrap/scss/forms";
+@import "../bootstrap/scss/modal";
+@import "../bootstrap/scss/nav";
+@import "../bootstrap/scss/navbar";
+@import "../bootstrap/scss/popover";
+@import "../bootstrap/scss/progress";
+@import "../bootstrap/scss/utilities";
+
+// Melo variables
+$zindex-overlay: ($zindex-fixed - 1);
 
 // Melo base
 @import "common";
+
+// Melo components
+@import "action";
+@import "card";
+@import "media";
+@import "modal";
+@import "nav";
+@import "overlay";
+@import "popover";
+@import "sheet";
+
+// Melo units
+@import "browser";
+@import "home";
+@import "player-bar";
+@import "player";
+@import "playlist";
+@import "settings";
+@import "side-bar";
+@import "top-bar";
+@import "wrapper";

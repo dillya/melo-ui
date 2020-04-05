@@ -1,0 +1,64 @@
+/* Player bar */
+
+#player-bar {
+  background-color: $player-bar-bg;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: $player-bar-height;
+  border-top: $border-width solid $border-color;
+  z-index: ($zindex-overlay - 1);
+
+  // Hide player controls except play button
+  .player-controls .nav-item, .volume {
+    display: none;
+  }
+
+  // Media expanded
+  .media {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  // Padding on position text
+  #playerbar-elapsed, #playerbar-duration {
+    padding: .5rem 0;
+  }
+
+  // Player position limited to 500px
+  .player-position {
+    max-width: 500px;
+  }
+
+  // Player volume fixed to 100px
+  .player-volume input {
+    width: 100px;
+  }
+}
+
+// Display complete player bar starting from medium devices
+@include media-breakpoint-up(md) {
+  #player-bar {
+    z-index: ($zindex-overlay + 1);
+
+    // Fix media to side bar width
+    .media {
+      flex-grow: 0;
+      min-width: $side-bar-width;
+      flex-basis: 33%;
+    }
+    .volume {
+      flex-basis: 33%;
+      ul {
+        justify-content: flex-end !important;
+      }
+    }
+
+    // Player controls occupy rest of space
+    .player-controls {
+      flex-grow: 1;
+    }
+  }
+}

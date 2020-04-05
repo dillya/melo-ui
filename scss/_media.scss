@@ -1,0 +1,94 @@
+/* Media item */
+
+$media-cover-width: 60px !default;
+$media-padding-x: 0.5rem !default;
+$media-padding-y: 0.5rem !default;
+$media-cover-margin-x: 0.5rem !default;
+
+$media-action-padding: 1rem !default;
+
+$media-icon-bg-color: $body-bg !default;
+$media-icon-font-size: 30px !default;
+
+// Media (cover | body)
+.media {
+  display: flex;
+  align-items: center;
+  padding: $media-padding-y $media-padding-x;
+  border-left: 3px solid transparent;
+
+  &.active {
+    background-color: $card-hover-bg;
+    border-left-color: $nav-active-color;
+  }
+}
+
+// Card as click
+.media-click {
+  cursor: pointer;
+
+  &:hover {
+    background-color: $card-hover-bg;
+  }
+}
+
+// Media check
+.media-check {
+  padding: 0 $media-padding-x;
+}
+
+// Media cover (handle image or icon)
+.media-cover {
+  position: relative;
+  width: $media-cover-width;
+  height: $media-cover-width;
+  object-fit: contain;
+  margin: 0 $media-cover-margin-x;
+  border-radius: 0.5rem;
+
+  .fa, .fab {
+    background-color: $media-icon-bg-color;
+    text-align: center;
+    font-size: $media-icon-font-size;
+    padding-top: calc(50% - #{$media-icon-font-size / 2});
+  }
+}
+
+// Media body (use all space)
+.media-body {
+  flex: 1;
+  min-width: 0;
+
+  // Truncate text
+  > * {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Media action
+.media-action {
+  padding-right: $media-padding-x;
+
+  a {
+    padding: $media-action-padding;
+  }
+}
+
+// List of medias
+.media-list {
+  // Separator between medias
+  .media {
+    border-bottom: $border-width solid $border-color;
+
+    &:last-child {
+      border-bottom-width: 0;
+    }
+  }
+
+  // Hide edit class
+  &:not([edit]) .media-edit {
+    display: none;
+  }
+}

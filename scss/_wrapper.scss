@@ -1,0 +1,22 @@
+/* Wrapper */
+
+#wrapper {
+  position: fixed;
+  top: $top-bar-height;
+  left: 0;
+  right: 0;
+  bottom: $player-bar-height;
+  transition: $transition-base;
+
+  > * {
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  #wrapper {
+    top: 0;
+    left: $side-bar-width;
+  }
+}

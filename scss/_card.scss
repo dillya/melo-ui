@@ -1,0 +1,54 @@
+/* Card */
+
+$card-icon-bg-color: $body-bg !default;
+$card-icon-font-size: 40px !default;
+
+$card-grid-wdith: 140px !default;
+$card-grid-margin: 5px !default;
+
+// Display centered icon in a .card-img
+.card-img, .card-img-top, .card-img-bottom {
+  background-color: $card-icon-bg-color;
+
+  .fa, .fab {
+    text-align: center;
+    font-size: $card-icon-font-size;
+    padding-top: calc(50% - #{$card-icon-font-size / 2});
+  }
+}
+
+// Card as link
+.card-click {
+  cursor: pointer;
+
+  &:hover {
+    background-color: $card-hover-bg;
+  }
+}
+
+// Display cards as a grid
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($card-grid-wdith, 1fr));
+  margin: $card-grid-margin;
+
+  .card {
+    margin: $card-grid-margin;
+  }
+}
+
+// Display cards as scrollable grid
+.card-scroll-grid {
+  display: flex;
+  overflow-y: hidden;
+  overflow-x: auto;
+
+  // Remove padding and replace with margin
+  padding: 0;
+  margin: $card-grid-margin;
+  margin-right: ($card-grid-margin * 2);
+
+  > .card {
+    margin: $card-grid-margin;
+  }
+}

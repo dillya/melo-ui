@@ -1,0 +1,81 @@
+/* Side bar */
+
+$side-bar-nav-padding-y: 0.5rem !default;
+$side-bar-nav-padding-x: 1rem !default;
+
+$side-bar-nav-link-padding-y: 0.25rem !default;
+$side-bar-nav-link-padding-x: 1rem !default;
+$side-bar-nav-link-active-border-width: 3px !default;
+
+// Side bar on left (hidden for small devices)
+#side-bar {
+  background-color: $side-bar-bg;
+
+  display: flex;
+  flex-direction: column;
+
+  position: fixed;
+  top: $top-bar-height;
+  bottom: 0;
+
+  width: $side-bar-width;
+  overflow: hidden;
+
+  border: solid $border-color;
+  border-width: $border-width $border-width 0 0;
+
+  transform: translateX(-100%);
+  transition: $transition-base;
+  z-index: ($zindex-overlay + 1);
+}
+
+// Side bar brand logo on top
+.sidebar-brand {
+  background-color: $nav-bg;
+  width: 100%;
+  padding: $navbar-brand-padding-y 0;
+  border-bottom: $border-width solid $border-color;
+
+  @include font-size($navbar-brand-font-size);
+  line-height: inherit;
+  white-space: nowrap;
+  text-align: center;
+}
+
+// Scrollable navigation
+.sidebar-nav {
+  position: relative;
+
+  flex-grow: 1;
+  height: 100%;
+  padding: $side-bar-nav-padding-y $side-bar-nav-padding-x;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  // Move menus on right
+  .nav {
+    padding: $side-bar-nav-padding-y 0;
+  }
+
+  .nav-link {
+    padding: $side-bar-nav-link-padding-y $side-bar-nav-link-padding-x;
+    border-left: $side-bar-nav-link-active-border-width solid transparent;
+
+    &:hover, &.active {
+      border-color: $nav-active-color;
+      color: inherit;
+    }
+  }
+}
+
+// Show on left the sidebar for medium and bigger devices
+@include media-breakpoint-up(md) {
+  #side-bar {
+    top: 0;
+    bottom: $player-bar-height;
+    border-top: 0;
+    transform: none !important;
+    z-index: ($zindex-overlay - 1);
+  }
+}
