@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BUILD_DIR=builddir
+PROTO_DIR=../melo/proto
 
 # Print command status
 function print_status() {
@@ -11,6 +12,13 @@ function print_status() {
     echo -e " -> \e[32mDONE\e[0m"
   fi
 }
+
+# Check programs
+if ! command -v npx >/dev/null; then
+  echo "The program npx is not installed, please read Environment section of the"
+  echo "README.md to install all dependencies."
+  exit 1
+fi
 
 # Create build directory
 if [ ! -d $BUILD_DIR ]; then
@@ -24,5 +32,20 @@ fi
 # Generate style sheet from SCSS (Sass)
 echo "[I] Compile CSS"
 sassc scss/melo.scss $BUILD_DIR/melo.css
+print_status $?
+
+#
+# Javascript
+#
+
+# Compile protobuf files
+echo "[I] Generate protobuf javascript"
+npx --no-install pbjs -t static-module -w commonjs -o $BUILD_DIR/browser.js \
+  $PROTO_DIR/browser.proto
+print_status $?
+
+# Bundle generated protobufjs files
+echo "[I] Bundle javascript"
+npx --no-install browserify $BUILD_DIR/browser.js -s melo -o $BUILD_DIR/melo.js
 print_status $?
 

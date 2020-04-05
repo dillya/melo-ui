@@ -11,6 +11,11 @@ interface easily, and a large community is behind. For Melo UI, we use the SCSS
 version of **Bootstrap** in order to embed only useful components and to use the
 mixins for Melo SCSS modules.
 
+On javascript side, the Node.js **protobufjs** module is used to encode / decode
+the protobuf messages from Melo (benchmarking of this module shows better
+performances than the official Google's javascript protobuf plugin). To make it
+working in web browser, the Node.js **browserify** module is used.
+
 ## Environment
 
 ### Style sheet
@@ -31,6 +36,23 @@ submodule with the following command:
 ```sh
 git submodule init
 git submodule update
+```
+
+### Javascript
+
+To compile and bundle all protobuf javascript code, **Node.js** and **npm** must
+be present on your system.
+
+On Debian / Ubuntu distribution, you can install them with:
+```sh
+sudo apt install npm
+```
+
+Then, the **protobufjs** and **browserify** module should be installed with the
+following command:
+
+```sh
+npm install protobufjs browserify
 ```
 
 ## Build
