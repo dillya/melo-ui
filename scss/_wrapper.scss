@@ -1,0 +1,14 @@
+/* Wrapper */
+
+#wrapper {
+  margin-top: $top-bar-height;
+  margin-bottom: $player-bar-height;
+  transition: $transition-base;
+}
+
+@include media-breakpoint-up(md) {
+  #wrapper {
+    margin-top: 0;
+    margin-left: $side-bar-width;
+  }
+}

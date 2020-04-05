@@ -1,0 +1,59 @@
+/* Nav */
+
+$nav-min-icon-width: 2rem !default;
+$nav-tabs-active-border-width: 3px !default;
+
+$nav-top-padding: 0.5rem !default;
+$nav-top-link-padding-x: 1rem !default;
+$nav-top-link-padding-y: 0.5rem !default;
+
+// Set default values
+.nav {
+  .fa, .fab {
+    min-width: $nav-min-icon-width;
+  }
+}
+
+// Separator item
+.nav-separator {
+  width: 100%;
+  margin: $nav-link-padding-y 0;
+  border-bottom: $border-width solid $border-color;
+}
+
+// Top nav
+.nav-top {
+  background-color: $nav-bg;
+  flex-wrap: nowrap;
+  padding: $nav-top-padding;
+
+  > .nav, .navbar-nav {
+    align-items: center;
+  }
+
+  > .nav .nav-link,
+  .navbar-nav .nav-link {
+    padding: $nav-top-link-padding-y $nav-top-link-padding-x;
+  }
+}
+
+// Top nav tabs
+.nav-tabs-top {
+  background-color: $nav-bg;
+  border-bottom: $nav-tabs-border-width solid $nav-tabs-border-color;
+
+  // Makes scrollable
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow-y: hidden;
+  overflow-x: auto;
+
+  .nav-link {
+    border-bottom: $nav-tabs-active-border-width solid transparent;
+
+    &:hover, &.active {
+      border-bottom: $nav-tabs-active-border-width solid $nav-active-color;
+      color: inherit;
+    }
+  }
+}

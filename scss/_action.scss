@@ -1,0 +1,56 @@
+/* Action sheet */
+
+$action-sheet-max-height: 75% !default;
+$action-sheet-padding-x: 1rem !default;
+$action-sheet-padding-y: $nav-link-padding-y !default;
+
+// Action sheet shown on bottom
+.action-sheet {
+  background-color: $nav-bg;
+
+  display: flex;
+  flex-direction: column;
+
+  // Fixed on bottom
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  // By default hidden
+  transform: translateY(100%);
+  transition: $transition-base;
+
+  max-height: $action-sheet-max-height;
+  padding: $action-sheet-padding-y $action-sheet-padding-x;
+
+  border: $border-width solid $border-color;
+  @include border-top-radius(1rem);
+  z-index: $zindex-modal;
+
+  .nav {
+    // Nested navs
+    .nav {
+      background-color: $body-bg;
+      padding: 0 $action-sheet-padding-x;
+      border: $border-width solid $border-color;
+    }
+  }
+
+  // Scrollable content
+  .action-sheet-body {
+    overflow-y: auto;
+    padding-bottom: $action-sheet-padding-y;
+  }
+
+  // Fixed footer (cancel button)
+  .action-sheet-footer {
+    padding-top: $action-sheet-padding-y;
+    border-top: $border-width solid $border-color;
+
+    .nav-link {
+      background-color: $body-bg;
+      text-align: center;
+    }
+  }
+}

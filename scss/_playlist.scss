@@ -1,0 +1,13 @@
+/* Playlist */
+
+// Playlist on right side for medium device
+@include media-breakpoint-up(md) {
+  #playlist {
+    width: $playlist-bar-width;
+    left: auto;
+    bottom: $player-bar-height;
+    border-left: $border-width solid $border-color;
+    box-shadow: 0 0 1rem black;
+    transform: translate(100%, 0);
+  }
+}

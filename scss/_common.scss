@@ -1,2 +1,41 @@
 /* Common style sheet */
 
+$brand-logo-width: 30px !default;
+
+// Make element square
+.square {
+  width: 100%;
+
+  &:after {
+    content: "";
+    display: block;
+    padding-bottom: 100%;
+  }
+
+  > * {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+}
+
+// Remove transformation
+.no-transform {
+  transform: none !important;
+}
+
+// Hide scrollbar
+@mixin hide-scrollbar() {
+  scrollbar-width: none;
+   &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Brand logo
+.brand-logo {
+  width: $brand-logo-width;
+  height: $brand-logo-width;
+}

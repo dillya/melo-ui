@@ -1,0 +1,45 @@
+/* Browser */
+
+#browser-nav {
+  // Browser search
+  #browser-search-input {
+    align-self: center;
+
+    input {
+      border-radius: 1rem;
+      height: 1.75rem;
+      padding-left: 2rem;
+    }
+
+    .fa-search {
+      color: $input-placeholder-color;
+      position: absolute;
+      top: 50%;
+      margin-left: .75rem;
+      margin-top: -.5rem;
+    }
+  }
+
+  // Back control and browser title
+  .navbar-nav:first-child {
+    // Prevent back control to be hidden
+    min-width: 3rem;
+  }
+}
+
+// Browser body
+#browser-body {
+  position: relative;
+}
+
+// Browser media list
+#browser-list {
+  .card {
+    text-align: center;
+  }
+
+  .card-title {
+    font-size: $font-size-base;
+    font-weight: bold;
+  }
+}

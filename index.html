@@ -11,12 +11,376 @@
   <!-- Melo CSS -->
   <link rel="stylesheet" href="melo.css">
 
+  <!-- Awesome font -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
   <title>Melo</title>
 </head>
 <body>
+  <!-- Mobile top navbar -->
+  <nav id="top-bar" class="navbar navbar-expand navbar-dark fixed-top d-md-none">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a id="topbar-toggle" class="nav-link"><i class="fa fa-bars"></i></a>
+      </li>
+    </ul>
+    <div class="navbar-brand mr-auto">
+      <img src="img/melo.png" class="brand-logo align-top">Melo
+    </div>
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a id="topbar-settings" class="nav-link" href="#">
+          <i class="fa fa-cog"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-  <!-- Protobuf and UI scripts -->
+  <!-- Side bar (left menu) -->
+  <div id="side-bar">
+    <div class="sidebar-brand d-none d-md-block">
+      <img src="img/melo.png" class="brand-logo align-top">Melo
+    </div>
+    <div class="sidebar-nav">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a id="sidebar-home" class="nav-link active" href="#">
+            <i class="fa fa-home"></i>Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a id="sidebar-settings" class="nav-link" href="#">
+            <i class="fa fa-cog"></i>Settings
+          </a>
+        </li>
+      </ul>
+      <div>Browse</div>
+      <ul id="sidebar-browsers" class="nav flex-column"></ul>
+      <div>Playlist</div>
+      <ul id="sidebar-playlists" class="nav flex-column">
+        <li class="nav-item">
+          <a id="sidebar-playlists-new" class="nav-link" href="#">
+            <i class="fa fa-plus-circle"></i>New playlist
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main container -->
+  <div id="wrapper">
+    <!-- Home -->
+    <div id="home">
+      <!-- Jumbo -->
+      <div id="jumbo"></div>
+      <!-- Browser suggestion -->
+      <div class="card">
+        <div class="card-header">Browser suggestion</div>
+        <div id="home-browsers" class="card-body card-scroll-grid"></div>
+      </div>
+      <!-- Playlist suggestion -->
+      <div class="card">
+        <div class="card-header">Playlist suggestion</div>
+        <div id="home-playlists" class="card-body card-scroll-grid"></div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="settings" class="d-none">
+      <!-- Settings navigation -->
+      <nav id="settings-nav" class="navbar navbar-expand nav-top">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a id="settings-prev" class="nav-link disabled" href="#">
+              <i class="fa fa-arrow-left"></i>
+            </a>
+          </li>
+          <li id="settings-title" class="nav-item text-truncate">
+            Global settings
+          </li>
+        </ul>
+      </nav>
+      <!-- Settings tab -->
+      <ul id="settings-tab" class="nav nav-tabs-top">
+        <li class="nav-item">
+          <a class="nav-link active"><i class="fa fa-cog"></i>Global</a>
+        </li>
+      </ul>
+      <!-- Settings body -->
+      <div id="settings-body"></div>
+    </div>
+
+    <!-- Browser -->
+    <div id="browser" class="d-none">
+      <!-- Browser navigation -->
+      <nav id="browser-nav" class="navbar navbar-expand nav-top">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a id="browser-prev" class="nav-link disabled" href="#">
+              <i class="fa fa-arrow-left"></i>
+            </a>
+          </li>
+          <li id="browser-title" class="nav-item text-truncate"></li>
+        </ul>
+        <ul id="browser-nav-search" class="navbar-nav ml-auto ">
+          <li id="browser-search-input" class="nav-item ml-auto d-none d-md-block">
+            <input type="text" class="form-control" placeholder="Search...">
+            <i class="fa fa-search"></i>
+          </li>
+          <li class="nav-item d-md-none">
+            <a id="browser-search" class="nav-link" href="#">
+              <i class="fa fa-search"></i>
+            </a>
+          </li>
+        </ul>
+        <ul id="browser-nav-control" class="navbar-nav">
+          <li class="nav-item d-none d-md-block">
+            <a id="browser-sort" class="nav-link" href="#">
+              <i class="fa fa-sort"></i>
+            </a>
+          </li>
+          <li class="nav-item d-none d-md-block">
+            <a id="browser-display" class="nav-link" href="#">
+              <i class="fa fa-th-list"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a id="browser-more" class="nav-link" href="#">
+              <i class="fa fa-ellipsis-h"></i>
+            </a>
+          </li>
+        </ul>
+        <!-- Browser tab popover -->
+        <div id="browser-tab-popover" class="popover bs-popover-bottom">
+          <div id="arrow" class="arrow"></div>
+          <div class="popover-body"></div>
+        </div>
+      </nav>
+
+      <!-- Browser tab -->
+      <ul id="browser-tab" class="nav nav-tabs-top"></ul>
+
+      <!-- Browser body -->
+      <div id="browser-body">
+        <!-- Browser media list / grid -->
+        <div id="browser-list" class="card-grid"></div>
+
+        <!-- Media action popover -->
+        <div id="browser-media-popover" class="popover bs-popover-left">
+          <div id="arrow" class="arrow"></div>
+          <div class="popover-body"></div>
+        </div>
+      </div>
+
+      <!-- Test area -->
+      <div id="events"></div>
+    </div>
+  </div>
+
+  <!-- Mobile action sheet -->
+  <div id="action-sheet" class="action-sheet">
+    <div class="action-sheet-body"></div>
+    <div class="action-sheet-footer">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a id="actionsheet-close" class="nav-link" href="#">Cancel</a>
+        </li>
+      </div>
+    </ul>
+  </div>
+
+  <!-- Mobile player sheet -->
+  <div id="player" class="sheet">
+    <ul class="sheet-header nav">
+      <li class="nav-item">
+        <a id="player-close" class="nav-link" href="#">
+          <i class="fa fa-times-circle"></i>
+        </a>
+      </li>
+      <li class="nav-item sheet-title">Player</li>
+    </ul>
+    <div id="player-body" class="sheet-body">
+      <img id="player-cover" src="demo/cover5.jpg">
+      <div class="player-controls">
+        <div class="text-center">
+          <h5>---</h5>
+          <h6>---</h6>
+        </div>
+        <ul class="nav justify-content-center">
+          <li class="nav-item">0:00</li>
+          <li id="player-pos" class="player-position nav-item">
+            <div id="player-pos-popover" class="player-position-popover">0:00</div>
+            <div id="player-progress" class="progress">
+              <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </li>
+          <li class="nav-item">0:00</li>
+        </ul>
+        <ul class="nav justify-content-center">
+          <li class="nav-item">
+            <a id="player-backward" class="nav-link disabled" href="#">
+              <i class="fa fa-step-backward"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a id="player-play" class="nav-link disabled player-play" href="#">
+              <i class="fa fa-play"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a id="player-forward" class="nav-link disabled" href="#">
+              <i class="fa fa-step-forward"></i>
+            </a>
+          </li>
+        </ul>
+        <ul class="nav justify-content-center">
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fa fa-volume-down"></i></a>
+          </li>
+          <li id="player-vol" class="nav-item player-volume">
+            <input type="range">
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fa fa-volume-up"></i></a>
+          </li>
+        </ul>
+        <ul class="nav justify-content-center">
+          <li class="nav-item">
+            <a id="playlist-open" class="nav-link" href="#">
+              <i class="fa fa-list"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fa fa-random"></i></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fa fa-sync"></i></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Playlist sheet -->
+  <div id="playlist" class="sheet sheet-scroll">
+    <ul class="sheet-header nav">
+      <li class="nav-item d-md-none">
+        <a id="playlist-close" class="nav-link" href="#">
+          <i class="fa fa-times-circle"></i>
+        </a>
+      </li>
+      <li class="nav-item sheet-title">Playlist</li>
+    </ul>
+    <div id="playlist-body" class="sheet-body media-list"></div>
+    <ul class="sheet-footer nav">
+      <li class="nav-item">
+        <a id="playlist-edit" class="nav-link" href="#">
+          <i class="fa fa-pen"></i>Edit
+        </a>
+      </li>
+      <li class="nav-item">
+        <a id="playlist-save" class="nav-link" href="#">
+          <i class="fa fa-save"></i>Save
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Player bar -->
+  <div id="player-bar" class="fixed-bottom">
+    <div id="player-open" class="media">
+      <img class="media-cover" src="demo/cover5.jpg">
+      <div class="media-body">
+        <h5>---</h5>
+        <h6>---</h6>
+      </div>
+    </div>
+    <div class="player-controls">
+      <ul class="nav justify-content-center">
+        <li class="nav-item d-md-block">
+          <a id="playerbar-backward" class="nav-link disabled" href="#">
+            <i class="fa fa-step-backward"></i>
+          </a>
+        </li>
+        <li class="nav-item d-block">
+          <a id="playerbar-play" class="nav-link disabled player-play" href="#">
+            <i class="fa fa-play"></i>
+          </a>
+        </li>
+        <li class="nav-item d-md-block">
+          <a id="playerbar-forward" class="nav-link disabled" href="#">
+            <i class="fa fa-step-forward"></i>
+          </a>
+        </li>
+      </ul>
+      <ul class="nav justify-content-center">
+        <li id="playerbar-elapsed"class="nav-item d-md-block">0:00</li>
+        <li id="playerbar-pos" class="nav-item player-position d-md-block">
+          <div id="playerbar-pos-popover" class="player-position-popover">0:00</div>
+          <div id="playerbar-progress" class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </li>
+        <li id="playerbar-duration"class="nav-item d-md-block">0:00</li>
+      </ul>
+    </div>
+    <div class="volume d-md-block">
+      <ul class="nav justify-content-center">
+        <li class="nav-item">
+          <a id="playlist-toggle" class="nav-link" href="#">
+            <i class="fa fa-list"></i>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="fa fa-random"></i></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="fa fa-sync"></i></a>
+        </li>
+      </ul>
+      <ul class="nav text-center">
+        <li class="nav-item">
+           <a class="nav-link" href="#"><i class="fa fa-volume-down"></i></a>
+        </li>
+        <li id="playerbar-vol" class="nav-item player-volume">
+          <input type="range">
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="fa fa-volume-up"></i></a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Info: Title</h5>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li>Title: xxx</li>
+            <li>Artist: xxx</li>
+            <li>Album: xxx</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button id="done" type="button" class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay" class="d-none"></div>
+
+  <!-- UI scripts -->
+  <script type="module" src="js/ui.js"></script>
+
+  <!-- Protobuf scripts -->
   <script src="melo.js"></script>
-  <script src="ui.js"></script>
+  <script src="ws.js"></script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+/* Popover */
+
+// Override popover
+.popover {
+  display: none;
+  box-shadow: 0 0 .5rem black;
+
+  // Remove margin on arrow
+  .arrow {
+    margin: 0;
+  }
+}

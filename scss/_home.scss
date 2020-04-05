@@ -1,0 +1,32 @@
+/* Home */
+
+$home-card-size: 120px !default;
+
+#home {
+  padding-bottom: .5rem;
+
+  // Jumbo header
+  #jumbo {
+    background: linear-gradient(to bottom, transparent, $body-bg),
+      url("img/jumbo.jpg");
+    background-size: cover;
+    height: 300px;
+    margin-bottom: 1rem;
+  }
+
+  > .card {
+    background-color: $body-bg;
+    margin: 1rem;
+
+    .card-header {
+      background-color: $card-bg;
+    }
+  }
+
+  // Scrollable card suggestion
+  .card-scroll-grid > .card {
+    min-width: $home-card-size;
+    width: $home-card-size;
+    text-align: center;
+  }
+}
