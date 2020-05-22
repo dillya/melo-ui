@@ -5,7 +5,7 @@
 
 import { insertSorted, parseIcon } from './utils.js';
 
-function addCard(parent, id, icon, name, callback) {
+function addCard(parent, id, icon, name, search, callback) {
   /* Create card element */
   var card = document.createElement('div');
   card.className = 'card card-click';
@@ -23,12 +23,14 @@ function addCard(parent, id, icon, name, callback) {
   insertSorted(parent, card);
 }
 
-function addBrowser(id, icon, name, callback) {
-  addCard(document.getElementById('home-browsers'), id, icon, name, callback);
+function addBrowser(id, icon, name, search, callback) {
+  addCard(document.getElementById('home-browsers'), id, icon, name, search,
+      callback);
 }
 
 function addPlaylist(id, icon, name) {
-  addCard(document.getElementById('home-playlists'), id, icon, name, null);
+  addCard(document.getElementById('home-playlists'), id, icon, name, false, 
+      null);
 }
 
 export { addBrowser, addPlaylist };

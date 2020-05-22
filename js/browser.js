@@ -37,6 +37,9 @@ var displayCard = true;
 // Current browser ID
 var currentId;
 var currentPath;
+var currentSortMenu = [];
+var currentSort = [];
+var currentActionMenu = [];
 
 // Current websockets
 var eventWebsocket;
@@ -46,7 +49,7 @@ var requestWebsocket; // TODO: hold multiple requests?
  * Display
  */
 
-function open(id, name) {
+function open(id, name, search = false) {
   /* Set browser title */
   document.getElementById('browser-title').textContent = name;
 
@@ -58,11 +61,27 @@ function open(id, name) {
     /* Reset path */
     currentPath = undefined;
 
+    /* Reset sort options */
+    currentSort = [];
+    currentSortMenu = [];
+    document.getElementById('browser-sort').classList.add('disabled');
+
+    /* Reset actions */
+    currentActionMenu = [];
+
     /* Close previously opened websockets */
     if (eventWebsocket)
       eventWebsocket.close();
     if (requestWebsocket)
       requestWebsocket.close();
+
+    if (search === "true") {
+      document.getElementById('browser-search').classList.remove('disabled');
+      document.getElementById('browser-search-input').firstElementChild.disabled = false;
+    } else {
+      document.getElementById('browser-search').classList.add('disabled');
+      document.getElementById('browser-search-input').firstElementChild.disabled = true;
+    }
 
     resetTab();
     resetMedias();
@@ -107,7 +126,15 @@ function get_list(path, offset, token)
       new WebSocket("ws://" + location.host + "/api/request/browser/" + currentId);
   requestWebsocket.binaryType = 'arraybuffer';
   requestWebsocket.onopen = function (event) {
-    var c = { getMediaList: { query: path, offset: offset, token: token, count: countPerRequest } };
+    var c = {
+      getMediaList: {
+        query: path,
+        offset: offset,
+        token: token,
+        count: countPerRequest,
+        sort: currentSort,
+      }
+    };
     var cmd = melo.Browser.Request.create(c);
 
     this.send(melo.Browser.Request.encode(cmd).finish());
@@ -120,7 +147,32 @@ function get_list(path, offset, token)
     if (resp.resp === "mediaList") {
       addMedias(resp.mediaList.items);
 
-      console.log(resp.mediaList.count, resp.mediaList.offset);
+      /* Update sort menu */
+      if (!resp.mediaList.offset) {
+        var first = true;
+
+        currentSort = [];
+        currentSortMenu = [];
+        document.getElementById('browser-sort').classList.add('disabled');
+
+        for (var menu of resp.mediaList.sortMenus) {
+          if (!first)
+            currentSortMenu.push({});
+          for (var item of menu.items)
+            currentSortMenu.push({ id: item.id, name: item.name });
+          first = false;
+        }
+        currentSort = resp.mediaList.sort.slice();
+        if (!first)
+          document.getElementById('browser-sort').classList.remove('disabled');
+      }
+
+      /* Update action menu */
+      if (!resp.mediaList.offset) {
+        currentActionMenu = resp.mediaList.actions.slice();
+      }
+
+      /* Add "load more" item */
       if (resp.mediaList.count)
         addMore(resp.mediaList.count + resp.mediaList.offset, resp.mediaList.count, resp.mediaList.nextToken);
     } else if (resp.resp === "mediaItem") {
@@ -188,24 +240,32 @@ function toggleDisplay() {
   ctrl.toggle('fa-th-large');
 
   displayCard = !displayCard;
-//  hideOverlay(); // TODO
 }
 
 function createSortMenu() {
   var list = document.createElement('ul');
   list.className = 'nav flex-column';
 
-  // TODO: construct from browser caps
-  list.appendChild(createNavLink('fa:check', 'Ascending'));
-  list.appendChild(createNavLink('', 'Descending'));
-  list.appendChild(createNavLink());
-  list.appendChild(createNavLink('fa:check', 'Name'));
-  list.appendChild(createNavLink('', 'Title'));
-  list.appendChild(createNavLink('', 'Artist'));
-  list.appendChild(createNavLink('', 'Album'));
-  list.appendChild(createNavLink('', 'Year'));
+  for (let item of currentSortMenu) {
+    var menu_id = 0;
+    if (item.id) {
+      let l = createNavLink(
+          currentSort[menu_id] === item.id ? 'fa:check' : '', item.name, setSort);
+      l.firstElementChild.dataset.id = item.id;
+      l.firstElementChild.dataset.menu_id = menu_id;
+      list.appendChild(l);
+    } else {
+      list.appendChild(createNavLink());
+      menu_id++;
+    }
+  }
 
   return list;
+}
+
+function setSort(event) {
+  currentSort[this.dataset.menu_id] = this.dataset.id;
+  list(currentPath);
 }
 
 function openSort(event) {
@@ -217,32 +277,79 @@ function openSort(event) {
 function openMore(event) {
   var list = document.createElement('ul');
   list.className = 'nav flex-column';
+  var custom = 0;
 
   /* Add basic actions */
-  list.appendChild(createNavLink('fa:play', 'Play all', playMedia));
-  list.appendChild(createNavLink('fa:plus', 'Add all', addMedia));
+  for (let action of currentActionMenu) {
+    if (action.type == 16) {
+      custom++;
+      continue;
+    }
+
+    /* Use default icon */
+    if (!action.icon) {
+      if (action.type === 1)
+        var icon = "fa:play";
+      else if (action.type === 2)
+        var icon = "fa:plus";
+      else
+        var icon = "";
+    } else
+        var icon = action.icon;
+
+    /* Create link */
+    var item = createNavLink(icon, action.name, actionMedia);
+    item.firstElementChild.dataset.id = "";
+    item.firstElementChild.dataset.type = action.type;
+    list.appendChild(item);
+  }
+
+  if (custom) {
+    list.appendChild(createNavLink());
+
+    /* Add custom actions */
+    for (let action of currentActionMenu) {
+      if (action.type != 16)
+        continue;
+
+      /* Set icon */
+      var icon = action.icon ? action.icon : "";
+
+      /* Create link */
+      var item = createNavLink(icon, action.name, actionMedia);
+      item.firstElementChild.dataset.id = "";
+      item.firstElementChild.dataset.type = action.type;
+      item.firstElementChild.dataset.customId = action.customId;
+      list.appendChild(item);
+    }
+  }
+
+  if (currentActionMenu.length > 0)
+    list.appendChild(createNavLink());
 
   /* Add sort / display for mobile */
   if (isMobile()) {
-    list.appendChild(createNavLink());
-
     /* Add sort with its sub-menu */
     var sort = createNavLink('fa:sort', 'Sort', function(event) {
       event.target.nextElementSibling.classList.toggle('d-none');
       event.stopPropagation();
     });
-    var sort_menu = createSortMenu();
-    sort_menu.classList.add('d-none');
-    sort.appendChild(sort_menu);
+    if (currentSortMenu.length > 0) {
+      var sort_menu = createSortMenu();
+      sort_menu.classList.add('d-none');
+      sort.appendChild(sort_menu);
+    } else
+      sort.firstElementChild.classList.add('disabled');
     list.appendChild(sort);
 
     /* Add display control */
     list.appendChild(createNavLink(
       displayCard ? 'fa:th-list' : 'fa:th-large', 'Display', toggleDisplay));
+
+    list.appendChild(createNavLink());
   }
 
   /* Add settings */
-  list.appendChild(createNavLink());
   list.appendChild(createNavLink('fa:cog', 'Settings')); //, openSettings));
 
   /* Add menu to action-sheet / popover */
@@ -315,6 +422,7 @@ function addMedias(medias) {
     var actions = item.lastElementChild;
     actions.children[0].onclick = addMedia;
     actions.children[1].dataset.id = media.id;
+    actions.children[1].actions = media.actions.slice();
     actions.children[1].onclick = openMediaAction;
 
     /* Append item */
@@ -377,23 +485,58 @@ function updateMedia(media) {
 function openMediaAction(event) {
   var list = document.createElement('ul');
   var id = this.dataset.id;
+  var custom = 0;
   list.className = 'nav flex-column';
 
   /* Add basic actions */
-  var item = createNavLink('fa:play', 'Play', playMedia);
-  item.firstElementChild.dataset.id = id;
-  list.appendChild(item);
-  item = createNavLink('fa:plus', 'Add', addMedia);
-  item.firstElementChild.dataset.id = id;
-  list.appendChild(item);
+  for (let action of this.actions) {
+    if (action.type == 16) {
+      custom++;
+      continue;
+    }
+
+    /* Use default icon */
+    if (!action.icon) {
+      if (action.type === 1)
+        var icon = "fa:play";
+      else if (action.type === 2)
+        var icon = "fa:plus";
+      else
+        var icon = "";
+    } else
+        var icon = action.icon;
+
+    /* Create link */
+    var item = createNavLink(icon, action.name, actionMedia);
+    item.firstElementChild.dataset.id = id;
+    item.firstElementChild.dataset.type = action.type;
+    list.appendChild(item);
+  }
+
+  /* Add info link */
   item = createNavLink('fa:info', 'Info', displayMediaInfo);
   item.firstElementChild.dataset.id = id;
   list.appendChild(item);
 
-  list.appendChild(createNavLink());
+  if (custom) {
+    list.appendChild(createNavLink());
 
-  /* Add custom actions */
-  list.appendChild(createNavLink('fa:search', 'Scan'));
+    /* Add custom actions */
+    for (let action of this.actions) {
+      if (action.type != 16)
+        continue;
+
+      /* Set icon */
+      var icon = action.icon ? action.icon : "";
+
+      /* Create link */
+      var item = createNavLink(icon, action.name, actionMedia);
+      item.firstElementChild.dataset.id = id;
+      item.firstElementChild.dataset.type = action.type;
+      item.firstElementChild.dataset.customId = action.customId;
+      list.appendChild(item);
+    }
+  }
 
   /* Add menu to action-sheet / popover */
   if (isMobile())
@@ -409,6 +552,27 @@ function openMediaAction(event) {
 
 function openMedia(event) {
   list(currentPath + "/" + this.dataset.id);
+}
+
+function actionMedia(event) {
+  var path = currentPath.startsWith("search:") ? "search:" : currentPath + "/";
+  var req = new WebSocket("ws://" + location.host + "/api/request/browser/" + currentId);
+  req.binaryType = 'arraybuffer';
+  req.media_id = this.dataset.id;
+  req.action_type = this.dataset.type;
+  req.onopen = function (event) {
+    var c = {
+      doAction: {
+        path: path + this.media_id,
+        type: this.action_type,
+        customId: this.customId,
+      }
+    };
+    var cmd = melo.Browser.Request.create(c);
+
+    this.send(melo.Browser.Request.encode(cmd).finish());
+  };
+  console.log("action: " + this.dataset.id + "/" + this.dataset.type);
 }
 
 function playMedia(event) {

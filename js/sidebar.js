@@ -32,24 +32,26 @@ function close() {
  * Navigation
  */
 
-function addItem(parent, id, icon, name, callback) {
+function addItem(parent, id, icon, name, search, callback) {
   /* Create list element */
   var li = createNavLink(icon, name, callback);
   li.firstElementChild.dataset.id = id;
   li.firstElementChild.dataset.name = name;
+  li.firstElementChild.dataset.search = search;
   li.dataset.name = name;
 
   /* Insert by alphabetic order */
   insertSorted(parent, li);
 }
 
-function addBrowser(id, icon, name, callback) {
-  addItem(document.getElementById('sidebar-browsers'), id, icon, name,
-    callback);
+function addBrowser(id, icon, name, search, callback) {
+  addItem(document.getElementById('sidebar-browsers'), id, icon, name, search,
+      callback);
 }
 
 function addPlaylist(id, icon, name) {
-  addItem(document.getElementById('sidebar-playlists'), id, icon, name, null);
+  addItem(document.getElementById('sidebar-playlists'), id, icon, name, false,
+      null);
 }
 
 /*

@@ -108,7 +108,7 @@ function openBrowser() {
   Sidebar.setBrowserActive(this.dataset.id);
   replaceOpened(document.getElementById('browser'));
 
-  Browser.open(this.dataset.id, this.dataset.name);
+  Browser.open(this.dataset.id, this.dataset.name, this.dataset.search);
 }
 
 var melo = require('melo');
@@ -123,7 +123,7 @@ ws_ev_bro.onmessage = function (event) {
   /* Handle event */
   if (ev.event === "add") {
     var desc = ev.add;
-    Sidebar.addBrowser(desc.id, desc.icon, desc.name, openBrowser);
-    Home.addBrowser(desc.id, desc.icon, desc.name, openBrowser);
+    Sidebar.addBrowser(desc.id, desc.icon, desc.name, desc.supportSearch, openBrowser);
+    Home.addBrowser(desc.id, desc.icon, desc.name, desc.supportSearch, openBrowser);
   }
 };
