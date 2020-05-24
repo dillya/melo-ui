@@ -11,6 +11,7 @@ function addCard(parent, id, icon, name, search, callback) {
   card.className = 'card card-click';
   card.dataset.id = id;
   card.dataset.name = name;
+  card.dataset.search = search;
   card.innerHTML =
     '<div class="card-img-top card-icon square">' + parseIcon(icon) + '</div>' +
     '  <div class="card-body">' +
