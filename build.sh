@@ -3,6 +3,8 @@
 BUILD_DIR=builddir
 PROTO_DIR=../melo/proto
 
+INSTALL_PATH=/usr/local/share/melo/ui
+
 # Print command status
 function print_status() {
   if [ $1 -ne 0 ]; then
@@ -50,3 +52,13 @@ npx --no-install browserify -r protobufjs -r ./$BUILD_DIR/melo_pb.js:melo \
   -o $BUILD_DIR/melo.js
 print_status $?
 
+#
+# Installation
+#
+
+if [ $# -ge 1 ] && [ $1 == "install" ]; then
+  echo "[I] Install UI"
+  sudo mkdir -p $INSTALL_PATH
+  sudo cp -r builddir/melo.css builddir/melo.js js img index.html $INSTALL_PATH
+  print_status $?
+fi
