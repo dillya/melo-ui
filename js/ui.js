@@ -42,16 +42,6 @@ document.addEventListener('click', function (event) {
 
 /*** Start of simulation ***/
 
-/* Add browsers */
-/*
-addBrowser({id: "com.sparod.file.browser", icon: "fa:folder-open", name: "Files"});
-addBrowser({id: 2, icon: "fa:music", name: "Library"});
-addBrowser({id: 3, icon: "fa:broadcast-tower", name: "Sparod radio"});
-addBrowser({id: 4, icon: "fa:broadcast-tower", name: "Rad.io"});
-addBrowser({id: 5, icon: "fab:spotify", name: "Spotify"});
-addBrowser({id: 6, icon: "fab:youtube", name: "Youtube"});
-*/
-
 /* Add playlists */
 addPlaylist({id: 1, icon: "fa:list", name: "Playlist 1"});
 addPlaylist({id: 2, icon: "fa:list", name: "Playlist 2"});
@@ -59,21 +49,6 @@ addPlaylist({id: 3, icon: "fa:list", name: "Playlist 3"});
 addPlaylist({id: 4, icon: "fa:list", name: "Playlist 4"});
 addPlaylist({id: 5, icon: "fa:list", name: "Playlist 5"});
 addPlaylist({id: 6, icon: "fa:list", name: "Playlist 6"});
-
-/* Add settings */
-addSettings({id: 1, icon: "fa:folder-open", name: "Files"});
-addSettings({id: 2, icon: "fa:music", name: "Library"});
-addSettings({id: 3, icon: "fa:broadcast-tower", name: "Sparod radio"});
-addSettings({id: 4, icon: "fa:broadcast-tower", name: "Rad.io"});
-addSettings({id: 5, icon: "fab:spotify", name: "Spotify"});
-addSettings({id: 6, icon: "fab:youtube", name: "Youtube"});
-
-/*
-function addBrowser(browser) {
-  Sidebar.addBrowser(browser.id, browser.icon, browser.name, openBrowser);
-  Home.addBrowser(browser.id, browser.icon, browser.name, openBrowser);
-}
-*/
 
 function addPlaylist(playlist) {
   Sidebar.addPlaylist(playlist.id, playlist.icon, playlist.name);
@@ -102,6 +77,7 @@ function openHome() {
 function openSettings() {
   Sidebar.setSettingsActive();
   replaceOpened(document.getElementById('settings'));
+  Settings.open('settings-global');
 }
 
 function openBrowser() {
@@ -125,5 +101,6 @@ ws_ev_bro.onmessage = function (event) {
     var desc = ev.add;
     Sidebar.addBrowser(desc.id, desc.icon, desc.name, desc.supportSearch, openBrowser);
     Home.addBrowser(desc.id, desc.icon, desc.name, desc.supportSearch, openBrowser);
+    Settings.addBrowser(desc.id, desc.icon, desc.name);
   }
 };

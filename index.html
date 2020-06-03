@@ -103,11 +103,33 @@
       <!-- Settings tab -->
       <ul id="settings-tab" class="nav nav-tabs-top">
         <li class="nav-item">
-          <a class="nav-link active"><i class="fa fa-cog"></i>Global</a>
+          <a id="settings-global" class="nav-link active" data-id="settings-body-global">
+            <i class="fa fa-cog"></i>Global
+          </a>
+        </li>
+        <li class="nav-item">
+          <a id="settings-network" class="nav-link" data-id="settings-body-network">
+            <i class="fa fa-wifi"></i>Network
+          </a>
+        </li>
+        <li class="nav-item">
+          <a id="settings-browsers" class="nav-link" data-id="settings-body-browsers">
+            <i class="fa fa-folder-open"></i>Browsers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a id="settings-players" class="nav-link" data-id="settings-body-players">
+            <i class="fa fa-play"></i>Players
+          </a>
         </li>
       </ul>
       <!-- Settings body -->
-      <div id="settings-body"></div>
+      <div id="settings-body">
+        <div id="settings-body-global" class="p-3"></div>
+        <div id="settings-body-network" class="p-3 d-none"></div>
+        <div id="settings-body-browsers" class="d-none"></div>
+        <div id="settings-body-players" class="d-none"></div>
+      </div>
     </div>
 
     <!-- Browser -->
@@ -171,9 +193,6 @@
           <div class="popover-body"></div>
         </div>
       </div>
-
-      <!-- Test area -->
-      <div id="events"></div>
     </div>
   </div>
 
