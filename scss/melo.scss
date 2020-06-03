@@ -9,7 +9,9 @@ $body-color: #dbdbdb;
 $border-color: #4e4e4e;
 $card-bg: #333333;
 $card-hover-bg: #444444;
+$input-color: $body-color;
 $input-bg: $body-bg;
+$input-disabled-bg: $card-bg;
 $input-color: $body-color;
 $link-color: $body-color;
 $modal-header-bg: #333333;
@@ -22,7 +24,6 @@ $player-bar-bg: $card-bg;
 $popover-bg: $body-bg;
 $side-bar-bg: $body-bg;
 $top-bar-bg: $card-bg;
-
 
 // Unit sizes
 $player-bar-height: 5rem;

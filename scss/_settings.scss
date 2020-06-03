@@ -1,2 +1,18 @@
 /* Settings */
 
+// Settings category header
+.settings-header {
+  background-color: $top-bar-bg;
+  padding: 1rem;
+  border-bottom: 1px solid $border-color;
+
+  .fa, .fab {
+    min-width: $nav-min-icon-width;
+  }
+}
+
+// Settings category body
+.settings-body {
+  padding: 1rem;
+  border-bottom: 1px solid $border-color;
+}
