@@ -43,7 +43,8 @@ print_status $?
 # Compile protobuf files
 echo "[I] Generate protobuf javascript"
 npx --no-install pbjs -t static-module -w commonjs -o $BUILD_DIR/melo_pb.js \
-  $PROTO_DIR/browser.proto $PROTO_DIR/player.proto $PROTO_DIR/playlist.proto
+  $PROTO_DIR/browser.proto $PROTO_DIR/player.proto $PROTO_DIR/playlist.proto \
+  $PROTO_DIR/settings.proto
 print_status $?
 
 # Bundle generated protobufjs files
