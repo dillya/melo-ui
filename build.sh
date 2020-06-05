@@ -2,6 +2,7 @@
 
 BUILD_DIR=builddir
 PROTO_DIR=../melo/proto
+PROTO2_DIR=../melo/src/proto
 
 INSTALL_PATH=/usr/local/share/melo/ui
 
@@ -44,7 +45,7 @@ print_status $?
 echo "[I] Generate protobuf javascript"
 npx --no-install pbjs -t static-module -w commonjs -o $BUILD_DIR/melo_pb.js \
   $PROTO_DIR/browser.proto $PROTO_DIR/player.proto $PROTO_DIR/playlist.proto \
-  $PROTO_DIR/settings.proto
+  $PROTO_DIR/settings.proto $PROTO2_DIR/network.proto
 print_status $?
 
 # Bundle generated protobufjs files

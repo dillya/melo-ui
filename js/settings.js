@@ -20,7 +20,7 @@ function openTab(event) {
   open(event.target.id);
 }
 
-function addCategory(parent, id, icon, name) {
+function addCategory(parent, id, icon, name, callback) {
   var cat = document.createElement('div');
   cat.dataset.id = id;
   cat.dataset.name = name;
@@ -36,7 +36,8 @@ function addCategory(parent, id, icon, name) {
       event.target.firstElementChild.classList.replace('fa-chevron-down', 'fa-chevron-right');
       event.target.dataset.opened = false;
     } else {
-      getSettings(event, id, event.target.nextElementSibling);
+      if (callback)
+        callback(event, id, event.target.nextElementSibling);
       event.target.nextElementSibling.classList.remove('d-none');
       event.target.firstElementChild.classList.replace('fa-chevron-right', 'fa-chevron-down');
       event.target.dataset.opened = true;
@@ -48,7 +49,7 @@ function addCategory(parent, id, icon, name) {
 }
 
 function addBrowser(id, icon, name) {
-  addCategory(document.getElementById('settings-body-browsers'), id, icon, name);
+  addCategory(document.getElementById('settings-body-browsers'), id, icon, name, getSettings);
 }
 
 function open(id) {
@@ -64,6 +65,8 @@ function open(id) {
 
   if (id === 'settings-global')
     getSettings(event, 'global', document.getElementById('settings-body-global'));
+  else if (id === 'settings-network')
+    getNetwork()
   document.getElementById('settings-title').textContent = link.textContent;
 }
 
@@ -89,6 +92,84 @@ function getSettings(event, id, body) {
       return;
 
     displaySettings(this.settings_body, this.settings_id, resp.groupList);
+  };
+}
+
+function getNetwork() {
+  var requestWebsocket =
+    new WebSocket("ws://" + location.host + "/api/request/network");
+  requestWebsocket.binaryType = 'arraybuffer';
+  requestWebsocket.onopen = function (event) {
+    var c = { getDeviceList: true };
+    var cmd = melo.Network.Request.create(c);
+
+    this.send(melo.Network.Request.encode(cmd).finish());
+  };
+  requestWebsocket.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var resp = melo.Network.Response.decode(msg);
+
+    /* Expect device list */
+    if (resp.resp !== "deviceList")
+      return;
+
+    var body = document.getElementById('settings-body-network');
+    body.innerHTML = "";
+
+    /* Display device list */
+    for (var dev of resp.deviceList.devices) {
+      if (dev.type === 0)
+        addCategory(body, dev.iface, "fa:ethernet", "Ethernet", getEthernet);
+      else if (dev.type === 1)
+        addCategory(body, dev.iface, "fa:wifi", "Wifi", getWifi);
+    }
+  };
+}
+
+function getEthernet(event, id, body)
+{
+
+}
+
+function getWifi(event, id, body)
+{
+  var requestWebsocket =
+    new WebSocket("ws://" + location.host + "/api/request/network");
+  requestWebsocket.binaryType = 'arraybuffer';
+  requestWebsocket.iface = id;
+  requestWebsocket.body = body;
+
+  requestWebsocket.onopen = function (event) {
+    var c = { getApList: this.iface };
+    var cmd = melo.Network.Request.create(c);
+
+    this.send(melo.Network.Request.encode(cmd).finish());
+  };
+  requestWebsocket.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var resp = melo.Network.Response.decode(msg);
+
+    /* Expect AP list */
+    if (resp.resp !== "apList")
+      return;
+
+    var html = '<ul class="nav flex-column">';
+    for (var ap of resp.apList.accessPoints) {
+      var st = 'text-success';
+
+      if (ap.strength < 33)
+        st = 'text-danger';
+      else if (ap.strength < 66)
+        st = 'text-warning';
+
+      html += '<li class="nav-item ' +
+        (resp.apList.activeBssid === ap.bssid ? 'text-primary' : '') + '">' +
+        '<i class="fa fa-signal ' + st + '"></i>' +
+        (!ap.ssid || ap.ssid === '' ? '<i>No name</i>' : ap.ssid) +
+        (ap.private ? '<i class="fa fa-lock ml-2"></i>' : '') +
+        '</li>';
+    }
+    body.innerHTML = html + '</ul>';
   };
 }
 
