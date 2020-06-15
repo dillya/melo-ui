@@ -126,12 +126,91 @@ function getNetwork() {
   };
 }
 
-function getEthernet(event, id, body)
+function addIPSettings(iface, name, ip, v6)
 {
+  var form = document.createElement('form');
+  form.dataset.iface = iface;
 
+  var html = '<fieldset><legend>' + name + '</legend>';
+  html += '<div class="form-group">' +
+      '<label for="mode">Mode: </label>' +
+      '<select class="form-control" id="mode">' +
+      '  <option value="0"' + (ip.mode == 0 ? " selected": "") + '>Automatic</option>' +
+      '  <option value="1"' + (ip.mode == 1 ? " selected": "") + '>Manual</option>' +
+      '  <option value="2"' + (ip.mode == 2 ? " selected": "") + '>Disabled</option>' +
+      '  </select>' +
+      '</div>';
+  html += '<div class="form-group">' +
+      '<label for="address">IP address: </label>' +
+      '<input type="text" class="form-control" id="address" value="' + ip.address + '">' +
+      '</div>';
+  html += '<div class="form-group">' +
+      '<label for="prefix">Prefix: </label>' +
+      '<input type="text" class="form-control" id="prefix" value="' + ip.prefix + '">' +
+      '</div>';
+  html += '<div class="form-group">' +
+      '<label for="gateway">Gateway: </label>' +
+      '<input type="text" class="form-control" id="gateway" value="' + ip.gateway + '">' +
+      '</div>';
+  html += '<div class="form-group">' +
+      '<label for="dns">DNS: </label>' +
+      '<input type="text" class="form-control" id="dns" value="' + ip.dns + '">' +
+      '</div>';
+  html += '<button type="submit" class="btn btn-primary">Save</button>';
+  html += '</fieldset>';
+  form.innerHTML = html;
+
+  form.onsubmit = function (event) {
+    var ip_settings = {
+      mode: event.target['mode'].value,
+      address: event.target['address'].value,
+      prefix: event.target['prefix'].value,
+      gateway: event.target['gateway'].value,
+      dns: event.target['dns'].value,
+    };
+
+    if (v6)
+      var c = {
+        setIpv6Settings: {
+          iface: event.target.dataset.iface,
+          settings: ip_settings,
+        }
+      };
+    else
+      var c = {
+        setIpv4Settings: {
+          iface: event.target.dataset.iface,
+          settings: ip_settings,
+        }
+      };
+
+    var requestWebsocket =
+      new WebSocket("ws://" + location.host + "/api/request/network");
+    requestWebsocket.binaryType = 'arraybuffer';
+
+    requestWebsocket.onopen = function (event) {
+      var cmd = melo.Network.Request.create(c);
+
+      this.send(melo.Network.Request.encode(cmd).finish());
+    };
+    requestWebsocket.onmessage = function (event) {
+      var msg = new Uint8Array(event.data);
+      var resp = melo.Network.Response.decode(msg);
+
+      /* Handle response */
+      if (resp.resp !== "ipSettings")
+        return;
+
+      /* TODO */
+      console.log("ip settings");
+      console.log(resp.ipSettings);
+    };
+  };
+
+  return form;
 }
 
-function getWifi(event, id, body)
+function getEthernet(event, id, body)
 {
   var requestWebsocket =
     new WebSocket("ws://" + location.host + "/api/request/network");
@@ -140,12 +219,67 @@ function getWifi(event, id, body)
   requestWebsocket.body = body;
 
   requestWebsocket.onopen = function (event) {
-    var c = { getApList: this.iface };
+    var c = { getEthernetDevice: this.iface };
     var cmd = melo.Network.Request.create(c);
 
     this.send(melo.Network.Request.encode(cmd).finish());
   };
   requestWebsocket.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var resp = melo.Network.Response.decode(msg);
+
+    /* Expect ethernet device */
+    if (resp.resp !== "ethernetDevice")
+      return;
+
+    body.appendChild(addIPSettings(this.iface, "IPv4", resp.ethernetDevice.ipv4, false));
+    body.appendChild(addIPSettings(this.iface, "IPv6", resp.ethernetDevice.ipv6, true));
+  };
+}
+
+function getWifi(event, id, body)
+{
+  body.innerHTML = "";
+
+  var requestWebsocket =
+    new WebSocket("ws://" + location.host + "/api/request/network");
+  requestWebsocket.binaryType = 'arraybuffer';
+  requestWebsocket.iface = id;
+  requestWebsocket.body = body;
+
+  requestWebsocket.onopen = function (event) {
+    var c = { getWifiDevice: this.iface };
+    var cmd = melo.Network.Request.create(c);
+
+    this.send(melo.Network.Request.encode(cmd).finish());
+  };
+  requestWebsocket.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var resp = melo.Network.Response.decode(msg);
+
+    /* Expect wifi device */
+    if (resp.resp !== "wifiDevice")
+      return;
+
+    var html = "";
+    html += addIPSettings("IPv4", resp.wifiDevice.ipv4);
+    html += addIPSettings("IPv6", resp.wifiDevice.ipv6);
+    body.innerHTML += html
+  };
+
+  var requesWifitWebsocket =
+    new WebSocket("ws://" + location.host + "/api/request/network");
+  requesWifitWebsocket.binaryType = 'arraybuffer';
+  requesWifitWebsocket.iface = id;
+  requesWifitWebsocket.body = body;
+
+  requesWifitWebsocket.onopen = function (event) {
+    var c = { getApList: this.iface };
+    var cmd = melo.Network.Request.create(c);
+
+    this.send(melo.Network.Request.encode(cmd).finish());
+  };
+  requesWifitWebsocket.onmessage = function (event) {
     var msg = new Uint8Array(event.data);
     var resp = melo.Network.Response.decode(msg);
 
@@ -169,7 +303,7 @@ function getWifi(event, id, body)
         (ap.private ? '<i class="fa fa-lock ml-2"></i>' : '') +
         '</li>';
     }
-    body.innerHTML = html + '</ul>';
+    body.innerHTML += html + '</ul>';
   };
 }
 
