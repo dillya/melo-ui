@@ -12,6 +12,7 @@ var opened = false;
 
 // Current websockets
 var eventWebsocket;
+var retryWebsocket = 3;
 
 // Current position
 var currentState = 0;
@@ -32,168 +33,182 @@ window.addEventListener("resize", function () {
     updateLayout();
 }, false);
 
-eventWebsocket =
-        new WebSocket("ws://" + location.host + "/api/event/player");
-eventWebsocket.binaryType = 'arraybuffer';
-eventWebsocket.onmessage = function (event) {
-  var msg = new Uint8Array(event.data);
-  var ev = melo.Player.Event.decode(msg);
+startEvent();
 
-  if (ev.event === "media") {
-    var media = document.getElementById('player-open');
-    var title = media.getElementsByClassName('title')[0];
-    var subtitle = media.getElementsByClassName('subtitle')[0];
+function startEvent() {
+  eventWebsocket =
+          new WebSocket("ws://" + location.host + "/api/event/player");
+  eventWebsocket.binaryType = 'arraybuffer';
+  eventWebsocket.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var ev = melo.Player.Event.decode(msg);
 
-    var media2 = document.getElementById('player-body');
-    var title2 = media2.getElementsByClassName('title')[0];
-    var subtitle2 = media2.getElementsByClassName('subtitle')[0];
+    if (ev.event === "media") {
+      var media = document.getElementById('player-open');
+      var title = media.getElementsByClassName('title')[0];
+      var subtitle = media.getElementsByClassName('subtitle')[0];
 
-    if (ev.media.tags && ev.media.tags.title) {
-      title.textContent = ev.media.tags.title;
-      subtitle.textContent = ev.media.tags.artist + ' / ' + ev.media.tags.album;
-      title2.textContent = ev.media.tags.title;
-      subtitle2.textContent = ev.media.tags.artist + ' / ' + ev.media.tags.album;
-    } else {
-      title.textContent = ev.media.name;
-      subtitle.textContent = "---";
-      title2.textContent = ev.media.name;
-      subtitle2.textContent = "---";
-    }
-    var temp = document.createElement('div');
-    if (ev.media.tags && ev.media.tags.cover)
-      temp.innerHTML = parseCover("img:asset/" + ev.media.tags.cover, "media-cover square");
-    else
-      temp.innerHTML = parseCover("fa:music", "media-cover square");
-    var temp2 = temp.cloneNode(true);
-    media.firstElementChild.replaceWith(temp.firstElementChild);
-    temp2.firstElementChild.id = "player-cover";
-    temp2.firstElementChild.className = "";
-    media2.firstElementChild.replaceWith(temp2.firstElementChild);
-    updateLayout();
+      var media2 = document.getElementById('player-body');
+      var title2 = media2.getElementsByClassName('title')[0];
+      var subtitle2 = media2.getElementsByClassName('subtitle')[0];
 
-  } else if (ev.event === "status") {
-    currentState = ev.status.state;
+      if (ev.media.tags && ev.media.tags.title) {
+        title.textContent = ev.media.tags.title;
+        subtitle.textContent = ev.media.tags.artist + ' / ' + ev.media.tags.album;
+        title2.textContent = ev.media.tags.title;
+        subtitle2.textContent = ev.media.tags.artist + ' / ' + ev.media.tags.album;
+      } else {
+        title.textContent = ev.media.name;
+        subtitle.textContent = "---";
+        title2.textContent = ev.media.name;
+        subtitle2.textContent = "---";
+      }
+      var temp = document.createElement('div');
+      if (ev.media.tags && ev.media.tags.cover)
+        temp.innerHTML = parseCover("img:asset/" + ev.media.tags.cover, "media-cover square");
+      else
+        temp.innerHTML = parseCover("fa:music", "media-cover square");
+      var temp2 = temp.cloneNode(true);
+      media.firstElementChild.replaceWith(temp.firstElementChild);
+      temp2.firstElementChild.id = "player-cover";
+      temp2.firstElementChild.className = "";
+      media2.firstElementChild.replaceWith(temp2.firstElementChild);
+      updateLayout();
 
-    if (ev.status.streamState && currentTimer) {
-      clearInterval(currentTimer);
-      currentTimer = undefined;
-    }
+    } else if (ev.event === "status") {
+      currentState = ev.status.state;
 
-    var ctrl = document.getElementById('playerbar-play');
-    var ctrl2 = document.getElementById('player-play');
-    if (ev.status.state === 1) { /* playing */
-      ctrl.firstElementChild.className = "fa fa-pause";
-      ctrl2.firstElementChild.className = "fa fa-pause";
-      if (ev.status.streamState === 0 && !currentTimer)
-        currentTimer = setInterval(function() {
-          currentPosition += 1000;
-          document.getElementById('playerbar-elapsed').textContent =
-              printTime(currentPosition / 1000);
-          document.getElementById('player-elapsed').textContent =
-              printTime(currentPosition / 1000);
-          var percent = currentDuration ? currentPosition / (currentDuration / 100) : 0;
-          document.getElementById('playerbar-progress').firstElementChild.style.width = percent + "%";
-          document.getElementById('player-progress').firstElementChild.style.width = percent + "%";
-        }, 1000);
-    } else { /* !playing */
-      ctrl.firstElementChild.className = "fa fa-play";
-      ctrl2.firstElementChild.className = "fa fa-play";
-      if (currentTimer)
+      if (ev.status.streamState && currentTimer) {
         clearInterval(currentTimer);
-      if (ev.status.state !== 2)
-        currentPosition = currentDuration = 0;
-      currentTimer = undefined;
-    }
+        currentTimer = undefined;
+      }
 
-    if (ev.status.streamState === 1) { /* loading */
-      var prog = document.getElementById('playerbar-progress').firstElementChild;
-      prog.classList.add('progress-bar-striped');
-      prog.classList.add('progress-bar-animated');
-      prog.style.width = "100%";
-      var prog = document.getElementById('player-progress').firstElementChild;
-      prog.classList.add('progress-bar-striped');
-      prog.classList.add('progress-bar-animated');
-      prog.style.width = "100%";
-    } else if (ev.status.streamState === 2) { /* buffering */
-      var prog = document.getElementById('playerbar-progress').firstElementChild;
-      prog.classList.add('progress-bar-striped');
-      prog.classList.add('bg-warning');
-      prog.style.width = ev.status.value + "%";
-      var prog2 = document.getElementById('player-progress').firstElementChild;
-      prog.classList.add('progress-bar-striped');
-      prog.classList.add('bg-warning');
-      prog2.style.width = ev.status.value + "%";
-    } else { /* none */
-      var prog = document.getElementById('playerbar-progress').firstElementChild;
-      prog.classList.remove('progress-bar-striped');
-      prog.classList.remove('progress-bar-animated');
-      prog.classList.remove('bg-warning');
-      var prog2 = document.getElementById('player-progress').firstElementChild;
-      prog2.classList.remove('progress-bar-striped');
-      prog2.classList.remove('progress-bar-animated');
-      prog2.classList.remove('bg-warning');
-    }
+      var ctrl = document.getElementById('playerbar-play');
+      var ctrl2 = document.getElementById('player-play');
+      if (ev.status.state === 1) { /* playing */
+        ctrl.firstElementChild.className = "fa fa-pause";
+        ctrl2.firstElementChild.className = "fa fa-pause";
+        if (ev.status.streamState === 0 && !currentTimer)
+          currentTimer = setInterval(function() {
+            currentPosition += 1000;
+            document.getElementById('playerbar-elapsed').textContent =
+                printTime(currentPosition / 1000);
+            document.getElementById('player-elapsed').textContent =
+                printTime(currentPosition / 1000);
+            var percent = currentDuration ? currentPosition / (currentDuration / 100) : 0;
+            document.getElementById('playerbar-progress').firstElementChild.style.width = percent + "%";
+            document.getElementById('player-progress').firstElementChild.style.width = percent + "%";
+          }, 1000);
+      } else { /* !playing */
+        ctrl.firstElementChild.className = "fa fa-play";
+        ctrl2.firstElementChild.className = "fa fa-play";
+        if (currentTimer)
+          clearInterval(currentTimer);
+        if (ev.status.state !== 2)
+          currentPosition = currentDuration = 0;
+        currentTimer = undefined;
+      }
 
-    if (ev.status.state === 0) { /* none */
-      ctrl.classList.add('disabled');
-      ctrl2.classList.add('disabled');
-    } else { /* !none */
-      ctrl.classList.remove('disabled');
-      ctrl2.classList.remove('disabled');
-    }
-    currentStreamState = ev.status.streamState;
-  } else if (ev.event === "position") {
-    currentPosition = ev.position.position;
-    currentDuration = ev.position.duration;
-    document.getElementById('playerbar-elapsed').textContent =
-        printTime(currentPosition / 1000);
-    document.getElementById('playerbar-duration').textContent =
-        printTime(currentDuration / 1000);
-    document.getElementById('player-elapsed').textContent =
-        printTime(currentPosition / 1000);
-    document.getElementById('player-duration').textContent =
-        printTime(currentDuration / 1000);
+      if (ev.status.streamState === 1) { /* loading */
+        var prog = document.getElementById('playerbar-progress').firstElementChild;
+        prog.classList.add('progress-bar-striped');
+        prog.classList.add('progress-bar-animated');
+        prog.style.width = "100%";
+        var prog = document.getElementById('player-progress').firstElementChild;
+        prog.classList.add('progress-bar-striped');
+        prog.classList.add('progress-bar-animated');
+        prog.style.width = "100%";
+      } else if (ev.status.streamState === 2) { /* buffering */
+        var prog = document.getElementById('playerbar-progress').firstElementChild;
+        prog.classList.add('progress-bar-striped');
+        prog.classList.add('bg-warning');
+        prog.style.width = ev.status.value + "%";
+        var prog2 = document.getElementById('player-progress').firstElementChild;
+        prog.classList.add('progress-bar-striped');
+        prog.classList.add('bg-warning');
+        prog2.style.width = ev.status.value + "%";
+      } else { /* none */
+        var prog = document.getElementById('playerbar-progress').firstElementChild;
+        prog.classList.remove('progress-bar-striped');
+        prog.classList.remove('progress-bar-animated');
+        prog.classList.remove('bg-warning');
+        var prog2 = document.getElementById('player-progress').firstElementChild;
+        prog2.classList.remove('progress-bar-striped');
+        prog2.classList.remove('progress-bar-animated');
+        prog2.classList.remove('bg-warning');
+      }
 
-    if (!currentStreamState) {
-      var percent = currentDuration ? currentPosition / (currentDuration / 100) : 0;
-      document.getElementById('playerbar-progress').firstElementChild.style.width = percent + "%";
-      document.getElementById('player-progress').firstElementChild.style.width = percent + "%";
+      if (ev.status.state === 0) { /* none */
+        ctrl.classList.add('disabled');
+        ctrl2.classList.add('disabled');
+      } else { /* !none */
+        ctrl.classList.remove('disabled');
+        ctrl2.classList.remove('disabled');
+      }
+      currentStreamState = ev.status.streamState;
+    } else if (ev.event === "position") {
+      currentPosition = ev.position.position;
+      currentDuration = ev.position.duration;
+      document.getElementById('playerbar-elapsed').textContent =
+          printTime(currentPosition / 1000);
+      document.getElementById('playerbar-duration').textContent =
+          printTime(currentDuration / 1000);
+      document.getElementById('player-elapsed').textContent =
+          printTime(currentPosition / 1000);
+      document.getElementById('player-duration').textContent =
+          printTime(currentDuration / 1000);
+
+      if (!currentStreamState) {
+        var percent = currentDuration ? currentPosition / (currentDuration / 100) : 0;
+        document.getElementById('playerbar-progress').firstElementChild.style.width = percent + "%";
+        document.getElementById('player-progress').firstElementChild.style.width = percent + "%";
+      }
+    } else if (ev.event === "volume") {
+      console.log("Volume: " + ev.volume.volume);
+      document.getElementById('playerbar-vol').firstElementChild.value = ev.volume.volume * 100;
+      document.getElementById('player-vol').firstElementChild.value = ev.volume.volume * 100;
+      if (ev.volume.mute) {
+        document.getElementById('playerbar-vol-down').firstElementChild.classList.replace('fa-volume-down', 'fa-volume-mute');
+        document.getElementById('player-vol-down').firstElementChild.classList.replace('fa-volume-down', 'fa-volume-mute');
+        document.getElementById('playerbar-vol').firstElementChild.disabled = true;
+        document.getElementById('player-vol').firstElementChild.disabled = true;
+      } else {
+        document.getElementById('playerbar-vol-down').firstElementChild.classList.replace('fa-volume-mute', 'fa-volume-down');
+        document.getElementById('player-vol-down').firstElementChild.classList.replace('fa-volume-mute', 'fa-volume-down');
+        document.getElementById('playerbar-vol').firstElementChild.disabled = false;
+        document.getElementById('player-vol').firstElementChild.disabled = false;
+      }
+      currentMute = ev.volume.mute;
+    } else if (ev.event === "error") {
+      console.log("Player error: " + ev.error);
+    } else if (ev.event === "playlist") {
+      if (ev.playlist.prev) {
+        document.getElementById('playerbar-backward').classList.remove('disabled');
+        document.getElementById('player-backward').classList.remove('disabled');
+      } else {
+        document.getElementById('playerbar-backward').classList.add('disabled');
+        document.getElementById('player-backward').classList.add('disabled');
+      }
+      if (ev.playlist.next) {
+        document.getElementById('playerbar-forward').classList.remove('disabled');
+        document.getElementById('player-forward').classList.remove('disabled');
+      } else {
+        document.getElementById('playerbar-forward').classList.add('disabled');
+        document.getElementById('player-forward').classList.add('disabled');
+      }
     }
-  } else if (ev.event === "volume") {
-    console.log("Volume: " + ev.volume.volume);
-    document.getElementById('playerbar-vol').firstElementChild.value = ev.volume.volume * 100;
-    document.getElementById('player-vol').firstElementChild.value = ev.volume.volume * 100;
-    if (ev.volume.mute) {
-      document.getElementById('playerbar-vol-down').firstElementChild.classList.replace('fa-volume-down', 'fa-volume-mute');
-      document.getElementById('player-vol-down').firstElementChild.classList.replace('fa-volume-down', 'fa-volume-mute');
-      document.getElementById('playerbar-vol').firstElementChild.disabled = true;
-      document.getElementById('player-vol').firstElementChild.disabled = true;
-    } else {
-      document.getElementById('playerbar-vol-down').firstElementChild.classList.replace('fa-volume-mute', 'fa-volume-down');
-      document.getElementById('player-vol-down').firstElementChild.classList.replace('fa-volume-mute', 'fa-volume-down');
-      document.getElementById('playerbar-vol').firstElementChild.disabled = false;
-      document.getElementById('player-vol').firstElementChild.disabled = false;
+  };
+  eventWebsocket.onclose = function (event) {
+    if (currentTimer) {
+        clearInterval(currentTimer);
+        currentTimer = undefined;
     }
-    currentMute = ev.volume.mute;
-  } else if (ev.event === "error") {
-    console.log("Player error: " + ev.error);
-  } else if (ev.event === "playlist") {
-    if (ev.playlist.prev) {
-      document.getElementById('playerbar-backward').classList.remove('disabled');
-      document.getElementById('player-backward').classList.remove('disabled');
-    } else {
-      document.getElementById('playerbar-backward').classList.add('disabled');
-      document.getElementById('player-backward').classList.add('disabled');
+    if (retryWebsocket) {
+      setTimeout(startEvent(), 1000);
+      retryWebsocket--;
     }
-    if (ev.playlist.next) {
-      document.getElementById('playerbar-forward').classList.remove('disabled');
-      document.getElementById('player-forward').classList.remove('disabled');
-    } else {
-      document.getElementById('playerbar-forward').classList.add('disabled');
-      document.getElementById('player-forward').classList.add('disabled');
-    }
-  }
-};
+  };
+}
 
 function open() {
   document.getElementById('player').classList.add('no-transform');
