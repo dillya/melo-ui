@@ -56,8 +56,10 @@ $popover-body-color: $popover-bg;
 @import "../bootstrap/scss/type";
 
 // Bootstrap components
+@import "../bootstrap/scss/alert";
 @import "../bootstrap/scss/buttons";
 @import "../bootstrap/scss/card";
+@import "../bootstrap/scss/close";
 @import "../bootstrap/scss/forms";
 @import "../bootstrap/scss/modal";
 @import "../bootstrap/scss/nav";
@@ -73,6 +75,7 @@ $zindex-overlay: ($zindex-fixed - 1);
 @import "common";
 
 // Melo components
+@import "alert";
 @import "action";
 @import "card";
 @import "media";

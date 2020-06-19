@@ -23,8 +23,8 @@ function show(element, content) {
 function showPopoverBottom(event, element, content) {
   show(element, content);
 
-  var px = event.target.offsetLeft + (event.target.offsetWidth / 2) - (element.offsetWidth / 2);
-  var py = event.target.offsetTop + event.target.offsetHeight;
+  var px = event.currentTarget.offsetLeft + (event.currentTarget.offsetWidth / 2) - (element.offsetWidth / 2);
+  var py = event.currentTarget.offsetTop + event.currentTarget.offsetHeight;
   var ax = (element.offsetWidth / 2) - (element.firstElementChild.offsetWidth / 2);
   var diff = px + element.offsetWidth + 16 - element.offsetParent.offsetWidth;
 
@@ -46,8 +46,8 @@ function showPopoverBottom(event, element, content) {
 function showPopoverLeft(event, element, content) {
   show(element, content);
 
-  var px = event.target.offsetLeft - element.offsetWidth - 16;
-  var py = event.target.offsetTop + (event.target.offsetHeight / 2) - (element.offsetHeight / 2);
+  var px = event.currentTarget.offsetLeft - element.offsetWidth - 16;
+  var py = event.currentTarget.offsetTop + (event.currentTarget.offsetHeight / 2) - (element.offsetHeight / 2);
   var ay = (element.offsetHeight / 2) - (element.firstElementChild.offsetHeight / 2);
   var diff = py + element.offsetHeight + 16 - element.offsetParent.offsetHeight;
 

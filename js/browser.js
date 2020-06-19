@@ -4,6 +4,7 @@
  */
 
 import { openActionSheet } from './action.js';
+import { showAlert } from './alert.js';
 import { openModal } from './modal.js';
 import { showPopoverBottom, showPopoverLeft, hidePopover } from './popover.js';
 import { createNavLink, isMobile, parseCover } from './utils.js';
@@ -37,6 +38,7 @@ var displayCard = true;
 // Current browser ID
 var currentId;
 var currentPath;
+var currentAuth = "";
 var currentSortMenu = [];
 var currentSort = [];
 var currentActionMenu = [];
@@ -129,6 +131,7 @@ function get_list(path, offset, token)
     var c = {
       getMediaList: {
         query: path,
+        auth: currentAuth,
         offset: offset,
         token: token,
         count: countPerRequest,
@@ -177,6 +180,37 @@ function get_list(path, offset, token)
         addMore(resp.mediaList.count + resp.mediaList.offset, resp.mediaList.count, resp.mediaList.nextToken);
     } else if (resp.resp === "mediaItem") {
       updateMedia(resp.mediaItem);
+    } else if (resp.resp === "error") {
+      if (resp.error.code === 401) {
+        var body = '<form>' +
+        '  <div class="form-group">' +
+        '    <label for="username">Username: </label>' +
+        '    <input type="text" class="form-control" id="username">' +
+        '  </div>' +
+        '  <div class="form-group">' +
+        '    <label for="domain">Domain: </label>' +
+        '    <input type="text" class="form-control" id="domain">' +
+        '  </div>' +
+        '  <div class="form-group">' +
+        '    <label for="password">Password: </label>' +
+        '    <input type="password" class="form-control" id="password">' +
+        '  </div>' +
+        '</form>';
+        openModal("Authentication required", body, "Ok", "Cancel", function (content) {
+          var form = content.firstElementChild;
+          var user = form['username'].value;
+          var domain = form['domain'].value;
+          var pass = form['password'].value;
+          currentAuth = "";
+          if (domain !== "")
+            currentAuth += domain + ':';
+          currentAuth += user + ':' + pass;
+
+          list(currentPath);
+        });
+      } else {
+        showAlert("danger", resp.error.message);
+      }
     }
   }
 }
@@ -331,7 +365,7 @@ function openMore(event) {
   if (isMobile()) {
     /* Add sort with its sub-menu */
     var sort = createNavLink('fa:sort', 'Sort', function(event) {
-      event.target.nextElementSibling.classList.toggle('d-none');
+      event.currentTarget.nextElementSibling.classList.toggle('d-none');
       event.stopPropagation();
     });
     if (currentSortMenu.length > 0) {
@@ -403,7 +437,7 @@ function addMedias(medias) {
       '  <h6 class="card-subtitle">' + subtitle + '</h6>' +
       '</div>' +
       '<div class="' + classes.action + '">' +
-      '  <a class="d-none d-md-inline-block" href="#" data-id="' + media.id + '">' +
+      '  <a class="d-none d-md-inline-block" href="#">' +
       '    <i class="fa fa-plus"></i>' +
       '  </a>' +
       '  <a id="more" href="#"><i class="fa fa-ellipsis-h"></i></a>' +
@@ -420,8 +454,11 @@ function addMedias(medias) {
 
     /* Add actions */
     var actions = item.lastElementChild;
+    actions.children[0].dataset.id = media.id;
+    actions.children[0].dataset.name = title || media.id;
     actions.children[0].onclick = addMedia;
     actions.children[1].dataset.id = media.id;
+    actions.children[1].dataset.name = title || media.id;
     actions.children[1].actions = media.actions.slice();
     actions.children[1].onclick = openMediaAction;
 
@@ -477,6 +514,10 @@ function updateMedia(media) {
 
           el.children[1].replaceWith(temp.firstElementChild);
         }
+
+        var actions = el.lastElementChild;
+        actions.children[0].dataset.name = media.tags.title;
+        actions.children[1].dataset.name = media.tags.title;
       }
     }
   }
@@ -509,6 +550,8 @@ function openMediaAction(event) {
     /* Create link */
     var item = createNavLink(icon, action.name, actionMedia);
     item.firstElementChild.dataset.id = id;
+    if (action.type === 2)
+      item.firstElementChild.dataset.name = this.dataset.name;
     item.firstElementChild.dataset.type = action.type;
     list.appendChild(item);
   }
@@ -516,6 +559,7 @@ function openMediaAction(event) {
   /* Add info link */
   item = createNavLink('fa:info', 'Info', displayMediaInfo);
   item.firstElementChild.dataset.id = id;
+  item.firstElementChild.dataset.name = this.dataset.name;
   list.appendChild(item);
 
   if (custom) {
@@ -572,6 +616,8 @@ function actionMedia(event) {
 
     this.send(melo.Browser.Request.encode(cmd).finish());
   };
+  if (this.dataset.type == 2)
+    showAlert("info", this.dataset.name + " added");
   console.log("action: " + this.dataset.id + "/" + this.dataset.type);
 }
 
@@ -600,18 +646,17 @@ function addMedia(event) {
 
     this.send(melo.Browser.Request.encode(cmd).finish());
   };
-  console.log("Add: " + this.dataset.id);
+  showAlert("info", this.dataset.name + " added");
 }
 
 function displayMediaInfo(event) {
-  console.log("Info: " + this.dataset.id);
-  openModal();
+  openModal(this.dataset.name, "Not yet implemented", "Done");
 }
 
 document.getElementById('browser-search-input').firstElementChild.onkeyup = function(event) {
   if (event.key === "Enter") {
-    console.log("search:" + event.target.value);
-    list("search:" + event.target.value);
+    console.log("search:" + event.currentTarget.value);
+    list("search:" + event.currentTarget.value);
   }
 };
 
@@ -631,10 +676,10 @@ function addTabs(medias) {
     var cover = media.tags && media.tags.cover ? media.tags.cover : "fa:folder";
     /* Create list element */
     var li = createNavLink(cover, media.name, function (event) {
-      list("/" + event.target.dataset.id);
+      list("/" + event.currentTarget.dataset.id);
       for (var el of document.getElementById('browser-tab').children)
         el.firstElementChild.classList.remove('active');
-      event.target.classList.add('active');
+      event.currentTarget.classList.add('active');
     });
     li.firstElementChild.dataset.id = media.id;
 

@@ -4,6 +4,7 @@
  */
 
 import { insertSorted, parseIcon } from './utils.js';
+import { showAlert } from './alert.js';
 
 var melo = require('melo');
 
@@ -17,7 +18,7 @@ document.getElementById('settings-browsers').onclick = openTab;
 document.getElementById('settings-players').onclick = openTab;
 
 function openTab(event) {
-  open(event.target.id);
+  open(event.currentTarget.id);
 }
 
 function addCategory(parent, id, icon, name, callback) {
@@ -31,16 +32,16 @@ function addCategory(parent, id, icon, name, callback) {
   /* Set open / close action */
   cat.firstElementChild.dataset.opened = false;
   cat.firstElementChild.onclick = function (event) {
-    if (event.target.dataset.opened === 'true') {
-      event.target.nextElementSibling.classList.add('d-none');
-      event.target.firstElementChild.classList.replace('fa-chevron-down', 'fa-chevron-right');
-      event.target.dataset.opened = false;
+    if (event.currentTarget.dataset.opened === 'true') {
+      event.currentTarget.nextElementSibling.classList.add('d-none');
+      event.currentTarget.firstElementChild.classList.replace('fa-chevron-down', 'fa-chevron-right');
+      event.currentTarget.dataset.opened = false;
     } else {
       if (callback)
-        callback(event, id, event.target.nextElementSibling);
-      event.target.nextElementSibling.classList.remove('d-none');
-      event.target.firstElementChild.classList.replace('fa-chevron-right', 'fa-chevron-down');
-      event.target.dataset.opened = true;
+        callback(event, id, event.currentTarget.nextElementSibling);
+      event.currentTarget.nextElementSibling.classList.remove('d-none');
+      event.currentTarget.firstElementChild.classList.replace('fa-chevron-right', 'fa-chevron-down');
+      event.currentTarget.dataset.opened = true;
     }
   };
 
@@ -162,24 +163,24 @@ function addIPSettings(iface, name, ip, v6)
 
   form.onsubmit = function (event) {
     var ip_settings = {
-      mode: event.target['mode'].value,
-      address: event.target['address'].value,
-      prefix: event.target['prefix'].value,
-      gateway: event.target['gateway'].value,
-      dns: event.target['dns'].value,
+      mode: event.currentTarget['mode'].value,
+      address: event.currentTarget['address'].value,
+      prefix: event.currentTarget['prefix'].value,
+      gateway: event.currentTarget['gateway'].value,
+      dns: event.currentTarget['dns'].value,
     };
 
     if (v6)
       var c = {
         setIpv6Settings: {
-          iface: event.target.dataset.iface,
+          iface: event.currentTarget.dataset.iface,
           settings: ip_settings,
         }
       };
     else
       var c = {
         setIpv4Settings: {
-          iface: event.target.dataset.iface,
+          iface: event.currentTarget.dataset.iface,
           settings: ip_settings,
         }
       };
@@ -361,14 +362,14 @@ function displaySettings(element, id, groupList)
 
     form.onsubmit = function (event) {
       var c = {
-        id: event.target.dataset.id,
+        id: event.currentTarget.dataset.id,
         setGroup: {
-          id: event.target.dataset.group,
+          id: event.currentTarget.dataset.group,
           entries: []
         }
       };
 
-      for (var entry of event.target) {
+      for (var entry of event.currentTarget) {
         if (entry.dataset.type === 'boolean')
           var e = { id: entry.id, boolean: entry.checked };
         else if (entry.dataset.type === 'int32')
@@ -406,7 +407,7 @@ function displaySettings(element, id, groupList)
           console.log("group");
           console.log(resp.group);
         } else if (resp.resp === "error")
-          console.log("settings error: " + resp.error);
+          showAlert("danger", 'Failed to save settings: ' + resp.error);
       };
     };
 

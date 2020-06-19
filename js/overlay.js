@@ -5,6 +5,8 @@
 
 var closeCb;
 
+document.getElementById('overlay').onclick = hideOverlay;
+
 function showOverlay(event, callback = undefined, className = undefined) {
   var overlay = document.getElementById('overlay');
 

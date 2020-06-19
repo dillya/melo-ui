@@ -4,6 +4,7 @@
  */
 
 import { parseCover } from './utils.js';
+import { showAlert } from './alert.js';
 
 var melo = require('melo');
 
@@ -180,7 +181,7 @@ function startEvent() {
       }
       currentMute = ev.volume.mute;
     } else if (ev.event === "error") {
-      console.log("Player error: " + ev.error);
+      showAlert("danger", 'Failed to play media: ' + ev.error);
     } else if (ev.event === "playlist") {
       if (ev.playlist.prev) {
         document.getElementById('playerbar-backward').classList.remove('disabled');
@@ -384,14 +385,15 @@ function hidePlayerPosition(event, elm) {
 
 function updatePlayerPosition(event, elm) {
   var px = event.clientX === undefined ? event.touches[0].clientX : event.clientX;
+  var el = event.currentTarget;
 
   /* Clamp position */
-  if (px < event.target.offsetLeft)
-    px = event.target.offsetLeft;
-  else if (px > event.target.offsetLeft + event.target.offsetWidth)
-    px = event.target.offsetLeft + event.target.offsetWidth;
+  if (px < el.offsetLeft)
+    px = el.offsetLeft;
+  else if (px > el.offsetLeft + el.offsetWidth)
+    px = el.offsetLeft + el.offsetWidth;
 
-  var pos = (px - event.target.offsetLeft) / event.target.offsetWidth;
+  var pos = (px - el.offsetLeft) / el.offsetWidth;
   elm.textContent = printTime(pos * currentDuration / 1000);
 
   /* Align position */
