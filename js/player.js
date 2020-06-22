@@ -6,6 +6,8 @@
 import { parseCover } from './utils.js';
 import { showAlert } from './alert.js';
 
+import * as Settings from './settings.js';
+
 var melo = require('melo');
 
 // Mobile player sheet
@@ -44,7 +46,9 @@ function startEvent() {
     var msg = new Uint8Array(event.data);
     var ev = melo.Player.Event.decode(msg);
 
-    if (ev.event === "media") {
+    if (ev.event === "add") {
+      Settings.addPlayer(ev.add.id, ev.add.icon, ev.add.name);
+    } else if (ev.event === "media") {
       var media = document.getElementById('player-open');
       var title = media.getElementsByClassName('title')[0];
       var subtitle = media.getElementsByClassName('subtitle')[0];

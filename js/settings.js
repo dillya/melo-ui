@@ -53,6 +53,10 @@ function addBrowser(id, icon, name) {
   addCategory(document.getElementById('settings-body-browsers'), id, icon, name, getSettings);
 }
 
+function addPlayer(id, icon, name) {
+  addCategory(document.getElementById('settings-body-players'), id, icon, name, getSettings);
+}
+
 function open(id) {
   var link = document.getElementById(id);
 
@@ -415,4 +419,4 @@ function displaySettings(element, id, groupList)
   }
 }
 
-export { addBrowser, open };
+export { addBrowser, addPlayer, open };
