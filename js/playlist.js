@@ -16,6 +16,7 @@ var eventWebsocket;
 
 // Active element
 var currentActive = 0;
+var currentSubActive = 0;
 
 /*
  * Display
@@ -27,6 +28,9 @@ function open(event) {
   document.getElementById('playlist').classList.add('no-transform');
   document.body.classList.add('overflow-hidden');
   opened = true;
+
+  currentActive = 0;
+  currentSubActive = 0;
 
   /* Create event websocket */
   eventWebsocket =
@@ -40,16 +44,33 @@ function open(event) {
     if (ev.event === "add") {
       console.log(ev.add.name);
       var body = document.getElementById('playlist-body');
-      body.insertBefore(genMedia(ev.add), body.firstChild);
+      body.insertBefore(addMedia(ev.add), body.firstChild);
       currentActive++;
+    } else if (ev.event === "addSub") {
+      console.log("add_sub: " + ev.addSub.name);
+      /* TODO: add sub media */
+    } else if (ev.event === "update") {
+      console.log("update: " + ev.update.index);
+      updateMedia(ev.update);
+    } else if (ev.event === "updateSub") {
+      console.log("update_sub: " + ev.updateSub.index + ":" + ev.updateSub.parent);
+      updateMedia(ev.updateSub);
     } else if (ev.event === "play") {
       var body = document.getElementById('playlist-body');
-      if (currentActive < body.children.length)
-        body.children[currentActive].classList.remove('active');
-      if (ev.play < body.children.length)
-        body.children[ev.play].classList.add('active');
-      currentActive = ev.play;
-      console.log(ev.play);
+      /* TODO: update sub media index */
+      if (currentActive < body.children.length) {
+        body.children[currentActive].firstElementChild.classList.remove('active');
+        if (currentSubActive >= 0 && currentSubActive < body.children[currentActive].lastElementChild.children.length)
+          body.children[currentActive].lastElementChild.children[currentSubActive].classList.remove('active');
+      }
+      if (ev.play.index < body.children.length) {
+        body.children[ev.play.index].firstElementChild.classList.add('active');
+        if (ev.play.subIndex >= 0 && ev.play.subIndex < body.children[ev.play.index].lastElementChild.children.length)
+          body.children[ev.play.index].lastElementChild.children[ev.play.subIndex].classList.add('active');
+      }
+      currentActive = ev.play.index;
+      currentSubActive = ev.play.subIndex;
+      console.log(ev.play.index);
     }
   };
 
@@ -72,15 +93,22 @@ function open(event) {
     /* Handle media list */
     if (resp.resp === "mediaList") {
       console.log(resp.mediaList.offset + " - " + resp.mediaList.count + " - " +
-          resp.mediaList.current);
+          resp.mediaList.current.index + ":" + resp.mediaList.current.subIndex);
       addMedias(resp.mediaList.medias);
 
       var body = document.getElementById('playlist-body');
-      if (currentActive < body.children.length)
-        body.children[currentActive].classList.remove('active');
-      if (resp.mediaList.current < body.children.length)
-        body.children[resp.mediaList.current].classList.add('active');
-      currentActive = resp.mediaList.current;
+      if (currentActive < body.children.length) {
+        body.children[currentActive].firstElementChild.classList.remove('active');
+        if (currentSubActive >= 0 && currentSubActive < body.children[currentActive].lastElementChild.children.length)
+          body.children[currentActive].lastElementChild.children[currentSubActive].classList.remove('active');
+      }
+      if (resp.mediaList.current.index < body.children.length) {
+        body.children[resp.mediaList.current.index].firstElementChild.classList.add('active');
+        if (resp.mediaList.current.subIndex >= 0 && resp.mediaList.current.subIndex < body.children[resp.mediaList.current.index].lastElementChild.children.length)
+          body.children[resp.mediaList.current.index].lastElementChild.children[resp.mediaList.current.subIndex].classList.add('active');
+      }
+      currentActive = resp.mediaList.current.index;
+      currentSubActive = resp.mediaList.current.subIndex;
     }
   };
 }
@@ -130,7 +158,7 @@ function genMedia(media) {
 
   /* Create item */
   var item = document.createElement('div');
-  item.className = 'media media-click';
+  item.className = 'media media-click'
   item.innerHTML =
     '<div class="media-check media-edit"><i class="fa fa-check"></i></div>' +
     parseCover(cover, 'media-cover square') +
@@ -149,19 +177,82 @@ function genMedia(media) {
   return item;
 }
 
+function updateMedia(media) {
+  var body = document.getElementById('playlist-body');
+
+  if (media.parent !== undefined) {
+    if (media.parent >= body.children.length)
+      return;
+    body = body.children[media.parent].lastElementChild;
+
+    if (media.index >= body.children.length)
+      return;
+    var item = body.children[media.index];
+  } else {
+    if (media.index >= body.children.length)
+      return;
+    var item = body.children[media.index].firstElementChild;
+  }
+
+  var title = media.tags && media.tags.title ? media.tags.title : media.name;
+  var subtitle = "";
+  if (media.tags) {
+    subtitle = media.tags.artist;
+    if (media.tags.album)
+      subtitle += ' / ' + media.tags.album;
+  }
+
+  var temp = document.createElement('div');
+  if (media.tags && media.tags.cover)
+    temp.innerHTML = parseCover("img:asset/" + media.tags.cover, "media-cover square");
+  else
+    temp.innerHTML = parseCover("fa:music", "media-cover square");
+
+  item.children[1].replaceWith(temp.firstElementChild);
+  item.children[2].children[0].innerHTML = title;
+  item.children[2].children[1].innerHTML = subtitle;
+}
+
+function addMedia(media) {
+  var item = document.createElement('div');
+  item.appendChild(genMedia(media));
+
+  var list = document.createElement('div');
+  list.className = 'media-list ml-4';
+  for (var sub of media.subMedias)
+    list.appendChild(genMedia(sub));
+  item.appendChild(list);
+
+  return item;
+}
+
 function addMedias(medias) {
   /* Create fragment */
   var frag = document.createDocumentFragment();
 
   /* Add medias */
   for (var media of medias)
-    frag.appendChild(genMedia(media));
+    frag.appendChild(addMedia(media));
 
   document.getElementById('playlist-body').appendChild(frag);
 }
 
 function playMedia(event) {
-  var par = this.parentNode;
+  var par = this.parentNode.parentNode;
+  var sub_id = -1;
+
+  /* Find sub-media index */
+  if (this.parentElement.parentElement.classList.contains('media-list')) {
+    par = this.parentNode;
+    sub_id = 0;
+    while (par.previousSibling !== null) {
+      par = par.previousSibling;
+      sub_id++;
+    }
+    par = this.parentNode.parentNode.parentNode;
+  }
+
+  /* Find media index */
   var id = 0;
   while (par.previousSibling !== null) {
     par = par.previousSibling;
@@ -171,7 +262,7 @@ function playMedia(event) {
   var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
   req.binaryType = 'arraybuffer';
   req.onopen = function (event) {
-    var c = { play: id };
+    var c = { play: { index: id, subIndex: sub_id } };
     var cmd = melo.Playlist.Request.create(c);
 
     this.send(melo.Playlist.Request.encode(cmd).finish());
