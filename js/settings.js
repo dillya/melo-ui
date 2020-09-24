@@ -266,10 +266,8 @@ function getWifi(event, id, body)
     if (resp.resp !== "wifiDevice")
       return;
 
-    var html = "";
-    html += addIPSettings("IPv4", resp.wifiDevice.ipv4);
-    html += addIPSettings("IPv6", resp.wifiDevice.ipv6);
-    body.innerHTML += html
+    body.appendChild(addIPSettings(this.iface, "IPv4", resp.wifiDevice.ipv4, false));
+    body.appendChild(addIPSettings(this.iface, "IPv6", resp.wifiDevice.ipv6, true));
   };
 
   var requesWifitWebsocket =
@@ -306,6 +304,7 @@ function getWifi(event, id, body)
         '<i class="fa fa-signal ' + st + '"></i>' +
         (!ap.ssid || ap.ssid === '' ? '<i>No name</i>' : ap.ssid) +
         (ap.private ? '<i class="fa fa-lock ml-2"></i>' : '') +
+        ' : ' + ap.mode + ' - ' + ap.security +
         '</li>';
     }
     body.innerHTML += html + '</ul>';
