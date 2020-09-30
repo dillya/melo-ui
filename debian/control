@@ -1,0 +1,19 @@
+Source: melo-ui
+Section: net
+Priority: optional
+Maintainer: Alexandre Dilly <dillya@sparod.com>
+Build-Depends: debhelper-compat (= 12),
+               libmelo-proto-dev (>= 1.0.0),
+               sassc,
+               npm
+Standards-Version: 4.1.4
+Homepage: https://www.github.com/dillya/melo-rad.io
+
+Package: melo-ui
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Description: The Melo web user interface
+ The Melo User Interface is a web interface based on HTML / CSS /JS with the
+ help of Bootstrap.
