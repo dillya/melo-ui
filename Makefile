@@ -30,12 +30,18 @@ install: builddir/melo.css builddir/melo.js
 	install -d $(uidir)/js
 	install js/* $(uidir)/js/
 
+dist:
+	git archive -o melo-ui.tar --prefix melo-ui-1.0.0/ HEAD
+	tar -rf melo-ui.tar --transform 's,^bootstrap,melo-ui-1.0.0/bootstrap,' bootstrap
+	gzip -f melo-ui.tar
+
 clean:
 	-rm -rf builddir
 
 distclean: clean
+	-rm melo-ui.tar.gz
 
 uninstall:
 	-rm -rf $(uidir)
 
-.PHONY: all install clean distclean uninstall
+.PHONY: all install clean distclean uninstall dist
