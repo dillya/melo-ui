@@ -279,9 +279,9 @@ function toggleDisplay() {
 function createSortMenu() {
   var list = document.createElement('ul');
   list.className = 'nav flex-column';
+  var menu_id = 0;
 
   for (let item of currentSortMenu) {
-    var menu_id = 0;
     if (item.id) {
       let l = createNavLink(
           currentSort[menu_id] === item.id ? 'fa:check' : '', item.name, setSort);
