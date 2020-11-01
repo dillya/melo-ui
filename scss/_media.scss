@@ -52,6 +52,13 @@ $media-icon-font-size: 30px !default;
     font-size: $media-icon-font-size;
     padding-top: calc(50% - #{$media-icon-font-size / 2});
   }
+  svg {
+    background-color: $media-icon-bg-color;
+    fill: $body-color;
+    width: $media-cover-width;
+    height: $media-cover-width;
+    padding: $media-icon-font-size / 2;
+  }
 }
 
 // Media body (use all space)

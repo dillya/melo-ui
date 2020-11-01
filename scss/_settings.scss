@@ -9,6 +9,11 @@
   .fa, .fab {
     min-width: $nav-min-icon-width;
   }
+  svg {
+    min-width: $nav-min-icon-width;
+    height: 16px;
+    fill: $body-color;
+  }
 }
 
 // Settings category body

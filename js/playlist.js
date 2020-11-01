@@ -4,7 +4,7 @@
  */
 
 import { showOverlay } from './overlay.js';
-import { isMobile, parseCover } from './utils.js';
+import { isMobile, parseCover, extractCover } from './utils.js';
 
 var melo = require('melo');
 
@@ -152,7 +152,7 @@ function genMedia(media) {
   }
 
   if (media.tags && media.tags.cover)
-    var cover = "img:asset/" + media.tags.cover;
+    var cover = extractCover(media.tags.cover);
   else
     var cover = "fa:music";
 
@@ -204,7 +204,8 @@ function updateMedia(media) {
 
   var temp = document.createElement('div');
   if (media.tags && media.tags.cover)
-    temp.innerHTML = parseCover("img:asset/" + media.tags.cover, "media-cover square");
+    temp.innerHTML = parseCover(extractCover(media.tags.cover),
+        "media-cover square");
   else
     temp.innerHTML = parseCover("fa:music", "media-cover square");
 

@@ -4,7 +4,10 @@
  */
 
 export function parseIcon(icon) {
-  if (icon.startsWith('fa:'))
+  if (icon.startsWith('svg:')) {
+    var svg = icon.substring(4);
+    return svg.slice(0, 4) + ' preserveAspectRatio="xMinYMin" ' + svg.slice(4);
+  } else if (icon.startsWith('fa:'))
     return '<i class="fa fa-' + icon.substring(3) + '"></i>';
   else if (icon.startsWith('fab:'))
     return '<i class="fab fa-' + icon.substring(4) + '"></i>';
@@ -17,6 +20,13 @@ export function parseCover(cover, className) {
     return '<img class="' + className + '" src="' + cover.substring(4) + '">';
   else
     return '<div class="' + className + '">' + parseIcon(cover) + '</div>';
+}
+
+export function extractCover(cover) {
+  if (cover.startsWith('img:') || cover.startsWith('svg:') ||
+      cover.startsWith('fa:') || cover.startsWith('fab:'))
+    return cover;
+  return "img:asset/" + cover;
 }
 
 export function insertSorted(parent, element) {

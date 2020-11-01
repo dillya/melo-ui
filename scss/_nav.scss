@@ -12,6 +12,11 @@ $nav-top-link-padding-y: 0.5rem !default;
   .fa, .fab {
     min-width: $nav-min-icon-width;
   }
+  svg {
+    min-width: $nav-min-icon-width;
+    height: 16px;
+    fill: $body-color;
+  }
 }
 
 // Separator item

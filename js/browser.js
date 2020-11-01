@@ -7,7 +7,7 @@ import { openActionSheet } from './action.js';
 import { showAlert } from './alert.js';
 import { openModal } from './modal.js';
 import { showPopoverBottom, showPopoverLeft, hidePopover } from './popover.js';
-import { createNavLink, isMobile, parseCover } from './utils.js';
+import { createNavLink, isMobile, parseCover, extractCover } from './utils.js';
 
 var melo = require('melo');
 
@@ -419,7 +419,7 @@ function addMedias(medias) {
     }
 
     if (media.tags && media.tags.cover)
-      var cover = "img:asset/" + media.tags.cover;
+      var cover = extractCover(media.tags.cover);
     else if (media.type === 1)
       var cover = "fa:music";
     else
@@ -508,8 +508,7 @@ function updateMedia(media) {
 
         if (media.tags.cover) {
           var temp = document.createElement('div');
-          temp.innerHTML = parseCover(
-            "img:asset/" + media.tags.cover,
+          temp.innerHTML = parseCover(extractCover(media.tags.cover),
             classes.cover);
 
           el.children[1].replaceWith(temp.firstElementChild);
@@ -673,7 +672,8 @@ function addTabs(medias) {
 
   /* Add medias */
   for (var media of medias) {
-    var cover = media.tags && media.tags.cover ? media.tags.cover : "fa:folder";
+    var cover = media.tags && media.tags.cover ? extractCover(media.tags.cover)
+      : "fa:folder";
     /* Create list element */
     var li = createNavLink(cover, media.name, function (event) {
       list("/" + event.currentTarget.dataset.id);

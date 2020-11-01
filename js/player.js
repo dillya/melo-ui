@@ -3,7 +3,7 @@
  * Copyright (C) 2020 Alexandre Dilly <dillya@sparod.com>
  */
 
-import { parseCover } from './utils.js';
+import { parseCover, extractCover } from './utils.js';
 import { showAlert } from './alert.js';
 
 import * as Settings from './settings.js';
@@ -70,7 +70,7 @@ function startEvent() {
       }
       var temp = document.createElement('div');
       if (ev.media.tags && ev.media.tags.cover)
-        temp.innerHTML = parseCover("img:asset/" + ev.media.tags.cover, "media-cover square");
+        temp.innerHTML = parseCover(extractCover(ev.media.tags.cover), "media-cover square");
       else
         temp.innerHTML = parseCover("fa:music", "media-cover square");
       var temp2 = temp.cloneNode(true);
