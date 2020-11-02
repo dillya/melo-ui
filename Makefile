@@ -11,8 +11,8 @@ all: builddir/melo.js builddir/melo.css
 builddir:
 	mkdir -p builddir
 
-builddir/melo.css: scss/melo.scss | builddir
-	sassc $^ $@
+builddir/melo.css: scss/melo.scss scss/_*.scss | builddir
+	sassc $< $@
 
 builddir/melo_pb.js: $(protodir)/*.proto | .npm builddir
 	npx --no-install pbjs -t static-module -w commonjs -o $@ $^
