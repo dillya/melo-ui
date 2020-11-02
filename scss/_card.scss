@@ -19,6 +19,7 @@ $card-grid-margin: 5px !default;
     background-color: $card-icon-bg-color;
     fill: $body-color;
     padding: calc(50% - #{$card-icon-font-size / 2});
+    width: 100%;
   }
 }
 
