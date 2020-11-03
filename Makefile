@@ -29,10 +29,12 @@ install: builddir/melo.css builddir/melo.js
 	install img/* $(uidir)/img/
 	install -d $(uidir)/js
 	install js/* $(uidir)/js/
+	install sortablejs/Sortable.min.js $(uidir)/
 
 dist:
 	git archive -o melo-ui.tar --prefix melo-ui-1.0.0/ HEAD
 	tar -rf melo-ui.tar --transform 's,^bootstrap,melo-ui-1.0.0/bootstrap,' bootstrap
+	tar -rf melo-ui.tar --transform 's,^sortablejs,melo-ui-1.0.0/sortablejs,' sortablejs
 	gzip -f melo-ui.tar
 
 clean:
