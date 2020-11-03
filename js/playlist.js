@@ -18,6 +18,9 @@ var eventWebsocket;
 var currentActive = 0;
 var currentSubActive = 0;
 
+// Sort object
+var sortObj;
+
 /*
  * Display
  */
@@ -130,10 +133,49 @@ function toggle(event) {
 function toggleEdit() {
   var body = document.getElementById('playlist-body');
 
-  if (body.hasAttribute("edit"))
+  if (body.hasAttribute("edit")) {
     body.removeAttribute("edit");
-  else
+    sortObj.destroy();
+  } else {
     body.setAttribute("edit", "");
+    sortObj = new Sortable(body, {
+      handle: ".media-action",
+      multiDrag: true,
+      selectedClass: "selected",
+
+      /* Element(s) have been moved */
+      onEnd: function (event) {
+        if (event.oldIndicies.length) {
+          var offset = event.newIndicies[0].index - event.oldIndicies[0].index;
+          var ids = [];
+          event.oldIndicies.forEach(function(item) {
+            ids.push({ index: item.index, subIndex: -1 });
+          });
+          var c = { move: { range: { linear: false, list: ids }, offset: offset } };
+        } else {
+          var offset = event.newIndex - event.oldIndex;
+          var id = { index: event.oldIndex, last: -1 };
+          var c = { move: { range: { linear: true, first: id, last: id }, offset: offset } };
+        }
+        var cmd = melo.Playlist.Request.create(c);
+
+        var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
+        req.binaryType = 'arraybuffer';
+        req.onopen = function (event) {
+          this.send(melo.Playlist.Request.encode(cmd).finish());
+        };
+      },
+
+      /* Multi-drag select */
+      onSelect: function(event) {
+        event.item.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+      },
+      onDeselect: function(event) {
+        event.item.children[0].children[0].innerHTML = '';
+      },
+
+    });
+  }
 
   event.stopPropagation();
 }
@@ -160,19 +202,21 @@ function genMedia(media) {
   var item = document.createElement('div');
   item.className = 'media media-click'
   item.innerHTML =
-    '<div class="media-check media-edit"><i class="fa fa-check"></i></div>' +
+    '<div class="media-check media-edit"></div>' +
     parseCover(cover, 'media-cover square') +
     '<div class="media-body">' +
     '  <h5>' + title + '</h5>' +
     '  <h6>' + subtitle + '</h6>' +
     '</div>' +
     '<div class="media-action media-edit">' +
-    '  <a tabindex="0"><i class="fa fa-bars"></i></a>' +
+    '  <a href="#"><i class="fa fa-bars"></i></a>' +
     '</div>';
 
   /* Add play action on cover and body */
   // TODO: set on item and stop propagation
+  item.children[0].onclick = selectMedia;
   item.children[1].onclick = item.children[2].onclick = playMedia;
+  item.children[3].onclick = function(event) { event.stopPropagation()};
 
   return item;
 }
@@ -236,6 +280,21 @@ function addMedias(medias) {
     frag.appendChild(addMedia(media));
 
   document.getElementById('playlist-body').appendChild(frag);
+}
+
+function selectMedia(event) {
+  var el = this.parentElement.parentElement;
+
+  /* Select into sortable object */
+  if (el.classList.contains('selected')) {
+    Sortable.utils.deselect(el);
+    this.innerHTML = '';
+  } else {
+    Sortable.utils.select(el);
+    this.innerHTML = '<i class="fa fa-check"></i>';
+  }
+
+  event.stopPropagation();
 }
 
 function playMedia(event) {

@@ -34,7 +34,10 @@ $media-icon-font-size: 30px !default;
 
 // Media check
 .media-check {
-  padding: 0 $media-padding-x;
+  width: 2rem;
+  height: $media-cover-width;
+  line-height: $media-cover-width;
+  text-align: center;
 }
 
 // Media cover (handle image or icon)
@@ -97,5 +100,9 @@ $media-icon-font-size: 30px !default;
   // Hide edit class
   &:not([edit]) .media-edit {
     display: none;
+  }
+
+  .selected {
+    background-color: $nav-active-color;
   }
 }
