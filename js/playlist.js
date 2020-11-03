@@ -20,6 +20,7 @@ var currentSubActive = 0;
 
 // Sort object
 var sortObj;
+var lastElement = null;
 
 /*
  * Display
@@ -169,6 +170,7 @@ function toggleEdit() {
       /* Multi-drag select */
       onSelect: function(event) {
         event.item.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+        lastElement = event.item;
       },
       onDeselect: function(event) {
         event.item.children[0].children[0].innerHTML = '';
@@ -216,7 +218,10 @@ function genMedia(media) {
   // TODO: set on item and stop propagation
   item.children[0].onclick = selectMedia;
   item.children[1].onclick = item.children[2].onclick = playMedia;
-  item.children[3].onclick = function(event) { event.stopPropagation()};
+  item.children[3].onclick = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  };
 
   return item;
 }
@@ -282,16 +287,49 @@ function addMedias(medias) {
   document.getElementById('playlist-body').appendChild(frag);
 }
 
+function getIndex(el) {
+  var index = 0;
+
+  while ((el = el.previousElementSibling))
+    index++;
+
+  return index;
+}
+
 function selectMedia(event) {
   var el = this.parentElement.parentElement;
+
+  event.preventDefault();
+  if (event.shiftKey)
+    document.getSelection().removeAllRanges();
 
   /* Select into sortable object */
   if (el.classList.contains('selected')) {
     Sortable.utils.deselect(el);
     this.innerHTML = '';
   } else {
+    /* Shift selection */
+    if (event.shiftKey && lastElement) {
+      var l = getIndex(lastElement);
+      var c = getIndex(el);
+      var e = lastElement;
+
+      if (l < c)
+        while ((e = e.nextElementSibling) != el) {
+          Sortable.utils.select(e);
+          e.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+        }
+      else
+        while ((e = e.previousElementSibling) != el) {
+          Sortable.utils.select(e);
+          e.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+        }
+    }
+
     Sortable.utils.select(el);
     this.innerHTML = '<i class="fa fa-check"></i>';
+
+    lastElement = el;
   }
 
   event.stopPropagation();
@@ -304,20 +342,12 @@ function playMedia(event) {
   /* Find sub-media index */
   if (this.parentElement.parentElement.classList.contains('media-list')) {
     par = this.parentNode;
-    sub_id = 0;
-    while (par.previousSibling !== null) {
-      par = par.previousSibling;
-      sub_id++;
-    }
+    sub_id = getIndex(par);
     par = this.parentNode.parentNode.parentNode;
   }
 
   /* Find media index */
-  var id = 0;
-  while (par.previousSibling !== null) {
-    par = par.previousSibling;
-    id++;
-  }
+  var id = getIndex(par);
 
   var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
   req.binaryType = 'arraybuffer';
