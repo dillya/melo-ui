@@ -15,12 +15,11 @@ var opened = false;
 var eventWebsocket;
 
 // Active element
-var currentActive = 0;
-var currentSubActive = 0;
+var currentActive = [];
 
 // Sort object
-var sortObj;
 var lastElement = null;
+var moveSource;
 
 /*
  * Display
@@ -33,8 +32,7 @@ function open(event) {
   document.body.classList.add('overflow-hidden');
   opened = true;
 
-  currentActive = 0;
-  currentSubActive = 0;
+  currentActive = [];
 
   /* Create event websocket */
   eventWebsocket =
@@ -46,35 +44,52 @@ function open(event) {
 
     /* Handle global playlist events */
     if (ev.event === "add") {
-      console.log(ev.add.name);
-      var body = document.getElementById('playlist-body');
-      body.insertBefore(addMedia(ev.add), body.firstChild);
-      currentActive++;
-    } else if (ev.event === "addSub") {
-      console.log("add_sub: " + ev.addSub.name);
-      /* TODO: add sub media */
+      var list = document.getElementById('playlist-body');
+      for (var idx of ev.add.parent.indices)
+        list = list.children[idx].lastElementChild;
+      list.insertBefore(addMedia(ev.add), list.firstChild);
     } else if (ev.event === "update") {
-      console.log("update: " + ev.update.index);
       updateMedia(ev.update);
-    } else if (ev.event === "updateSub") {
-      console.log("update_sub: " + ev.updateSub.index + ":" + ev.updateSub.parent);
-      updateMedia(ev.updateSub);
+    } else if (ev.event === "delete") {
+      var list = document.getElementById('playlist-body');
+      if (ev.delete.linear) {
+        var el;
+        for (idx of ev.delete.first.indices) {
+          el = list.children[idx];
+          list = el.lastElementChild;
+        }
+        while (ev.delete.length--) {
+          var e = el;
+          el = el.nextElementSibling;
+          e.remove();
+        }
+      } else {
+        var els = []
+        for (var media of ev.delete.list) {
+          var next = list;
+          var el;
+          for (idx of media.indices) {
+            el = next.children[idx];
+            next = el.lastElementChild;
+          }
+          els.push(el);
+        }
+        for (var el of els)
+          el.remove();
+      }
     } else if (ev.event === "play") {
       var body = document.getElementById('playlist-body');
-      /* TODO: update sub media index */
-      if (currentActive < body.children.length) {
-        body.children[currentActive].firstElementChild.classList.remove('active');
-        if (currentSubActive >= 0 && currentSubActive < body.children[currentActive].lastElementChild.children.length)
-          body.children[currentActive].lastElementChild.children[currentSubActive].classList.remove('active');
+      var list = body;
+      for (var idx of currentActive) {
+        list.children[idx].firstElementChild.classList.remove('active');
+        list = list.children[idx].lastElementChild;
       }
-      if (ev.play.index < body.children.length) {
-        body.children[ev.play.index].firstElementChild.classList.add('active');
-        if (ev.play.subIndex >= 0 && ev.play.subIndex < body.children[ev.play.index].lastElementChild.children.length)
-          body.children[ev.play.index].lastElementChild.children[ev.play.subIndex].classList.add('active');
+      list = body;
+      for (var idx of ev.play.indices) {
+        list.children[idx].firstElementChild.classList.add('active');
+        list = list.children[idx].lastElementChild;
       }
-      currentActive = ev.play.index;
-      currentSubActive = ev.play.subIndex;
-      console.log(ev.play.index);
+      currentActive =  ev.play.indices;
     }
   };
 
@@ -101,28 +116,30 @@ function open(event) {
       addMedias(resp.mediaList.medias);
 
       var body = document.getElementById('playlist-body');
-      if (currentActive < body.children.length) {
-        body.children[currentActive].firstElementChild.classList.remove('active');
-        if (currentSubActive >= 0 && currentSubActive < body.children[currentActive].lastElementChild.children.length)
-          body.children[currentActive].lastElementChild.children[currentSubActive].classList.remove('active');
+      var list = body;
+      for (var idx of currentActive) {
+        list.children[idx].firstElementChild.classList.remove('active');
+        list = list.children[idx].lastElementChild;
       }
-      if (resp.mediaList.current.index < body.children.length) {
-        body.children[resp.mediaList.current.index].firstElementChild.classList.add('active');
-        if (resp.mediaList.current.subIndex >= 0 && resp.mediaList.current.subIndex < body.children[resp.mediaList.current.index].lastElementChild.children.length)
-          body.children[resp.mediaList.current.index].lastElementChild.children[resp.mediaList.current.subIndex].classList.add('active');
+      list = body;
+      for (var idx of resp.mediaList.current.indices) {
+        list.children[idx].firstElementChild.classList.add('active');
+        list = list.children[idx].lastElementChild;
       }
-      currentActive = resp.mediaList.current.index;
-      currentSubActive = resp.mediaList.current.subIndex;
+      currentActive = resp.mediaList.current.indices;
     }
   };
 }
 
 function close() {
+  /* Exit edition */
+  exitEdit();
+
   /* Close event websocket */
   eventWebsocket.close();
-
   opened = false;
   document.getElementById('playlist').classList.remove('no-transform');
+  document.getElementById('playlist-body').removeAttribute("edit");
   document.body.classList.remove('overflow-hidden');
 }
 
@@ -131,35 +148,65 @@ function toggle(event) {
     open(event)
 }
 
-function toggleEdit() {
-  var body = document.getElementById('playlist-body');
+function enterEdit() {
+  var body = document.getElementById('playlist');
+  var lists = body.getElementsByClassName('media-list');
 
-  if (body.hasAttribute("edit")) {
-    body.removeAttribute("edit");
-    sortObj.destroy();
-  } else {
-    body.setAttribute("edit", "");
-    sortObj = new Sortable(body, {
+  /* Switch to Restore default controls */
+  document.getElementById('playlist-controls').classList.add('d-none');
+  document.getElementById('playlist-controls-edit').classList.remove('d-none');
+
+  for (var list of lists) {
+    /* Skip not sortable lists */
+    if (list !== lists[0] && list.previousElementSibling &&
+        !list.previousElementSibling.hasAttribute("sortable"))
+      continue;
+
+    /* Set editable */
+    list.setAttribute("edit", "");
+
+    /* Set media list to sortable */
+    Sortable.create(list, {
+      group: "playlist",
       handle: ".media-action",
       multiDrag: true,
       selectedClass: "selected",
 
-      /* Element(s) have been moved */
-      onEnd: function (event) {
+      /* Elements dragging started */
+      onStart: function (event) {
+        console.log(event);
+        /* Save source position */
+        var parents = getIndices(event.from.parentElement);
         if (event.oldIndicies.length) {
-          var offset = event.newIndicies[0].index - event.oldIndicies[0].index;
-          var ids = [];
-          event.oldIndicies.forEach(function(item) {
-            ids.push({ index: item.index, subIndex: -1 });
-          });
-          var c = { move: { range: { linear: false, list: ids }, offset: offset } };
+          moveSource = [];;
+          for (var item of event.oldIndicies) {
+            var indices = parents.slice();
+            indices.push(item.index);
+            moveSource.push({ indices: indices });
+          }
         } else {
-          var offset = event.newIndex - event.oldIndex;
-          var id = { index: event.oldIndex, last: -1 };
-          var c = { move: { range: { linear: true, first: id, last: id }, offset: offset } };
+          parents.push(event.oldIndex);
+          moveSource = { indices: parents };
         }
-        var cmd = melo.Playlist.Request.create(c);
+        console.log(moveSource);
+      },
 
+      /* Elements have been moved */
+      onEnd: function (event) {
+        /* Get destination */
+        var ids = getIndices(event.to.parentElement)
+        ids.push(event.newIndex);
+        var dest = { indices: ids };
+
+        /* Generate command */
+        if (event.oldIndicies.length)
+          var c = { move: { range: { linear: false, list: moveSource }, dest: dest } };
+        else
+          var c = { move: { range: { linear: true, first: moveSource, length: 1 }, dest: dest } };
+        console.log(c);
+
+        /* Send move request */
+        var cmd = melo.Playlist.Request.create(c);
         var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
         req.binaryType = 'arraybuffer';
         req.onopen = function (event) {
@@ -175,10 +222,64 @@ function toggleEdit() {
       onDeselect: function(event) {
         event.item.children[0].children[0].innerHTML = '';
       },
-
     });
   }
 
+  event.stopPropagation();
+}
+
+function exitEdit() {
+  var body = document.getElementById('playlist');
+  var lists = body.getElementsByClassName('media-list');
+
+  /* Restore default controls */
+  document.getElementById('playlist-controls').classList.remove('d-none');
+  document.getElementById('playlist-controls-edit').classList.add('d-none');
+
+
+  for (var list of lists) {
+    if (list.hasAttribute("edit")) {
+      /* Remove editable and destroy sortable */
+      list.removeAttribute("edit");
+      Sortable.get(list).destroy();
+    }
+  }
+
+  event.stopPropagation();
+}
+
+function getIndices(el) {
+  var indices = [];
+
+  while (el.parentElement.classList.contains('media-list')) {
+    indices.unshift(getIndex(el));
+    el = el.parentElement.parentElement;
+  }
+
+  return indices;
+}
+
+function deleteMedias() {
+  var body = document.getElementById('playlist-body');
+  var selected = document.getElementsByClassName('selected');
+
+  var list = [];
+  for (var el of selected)
+    list.push({ indices: getIndices(el) });
+  console.log(list);
+  var c = { delete: { linear: false, list: list } };
+  var cmd = melo.Playlist.Request.create(c);
+
+  var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
+  req.binaryType = 'arraybuffer';
+  req.onopen = function (event) {
+    this.send(melo.Playlist.Request.encode(cmd).finish());
+  };
+
+  event.stopPropagation();
+}
+
+function savePlaylist() {
   event.stopPropagation();
 }
 
@@ -214,10 +315,14 @@ function genMedia(media) {
     '  <a href="#"><i class="fa fa-bars"></i></a>' +
     '</div>';
 
+  /* Set attributes */
+  if (media.sortable)
+    item.setAttribute("sortable", "");
+
   /* Add play action on cover and body */
-  // TODO: set on item and stop propagation
   item.children[0].onclick = selectMedia;
-  item.children[1].onclick = item.children[2].onclick = playMedia;
+  if (media.playable)
+    item.children[1].onclick = item.children[2].onclick = playMedia;
   item.children[3].onclick = function(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -227,21 +332,10 @@ function genMedia(media) {
 }
 
 function updateMedia(media) {
-  var body = document.getElementById('playlist-body');
-
-  if (media.parent !== undefined) {
-    if (media.parent >= body.children.length)
-      return;
-    body = body.children[media.parent].lastElementChild;
-
-    if (media.index >= body.children.length)
-      return;
-    var item = body.children[media.index];
-  } else {
-    if (media.index >= body.children.length)
-      return;
-    var item = body.children[media.index].firstElementChild;
-  }
+  var list = document.getElementById('playlist-body');
+  for (var idx of media.parent.indices)
+    list = list.children[idx].lastElementChild;
+  var item = list.children[media.index].firstElementChild;
 
   var title = media.tags && media.tags.title ? media.tags.title : media.name;
   var subtitle = "";
@@ -269,8 +363,10 @@ function addMedia(media) {
 
   var list = document.createElement('div');
   list.className = 'media-list ml-4';
-  for (var sub of media.subMedias)
-    list.appendChild(genMedia(sub));
+
+  for (var child of media.children)
+    list.appendChild(addMedia(child));
+
   item.appendChild(list);
 
   return item;
@@ -336,40 +432,23 @@ function selectMedia(event) {
 }
 
 function playMedia(event) {
-  var par = this.parentNode.parentNode;
-  var sub_id = -1;
+  var el = this.parentElement.parentElement;
 
-  /* Find sub-media index */
-  if (this.parentElement.parentElement.classList.contains('media-list')) {
-    par = this.parentNode;
-    sub_id = getIndex(par);
-    par = this.parentNode.parentNode.parentNode;
+  var indices = [];
+
+  while (el.parentElement.classList.contains('media-list')) {
+    indices.unshift(getIndex(el));
+    el = el.parentElement.parentElement;
   }
-
-  /* Find media index */
-  var id = getIndex(par);
 
   var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
   req.binaryType = 'arraybuffer';
   req.onopen = function (event) {
-    var c = { play: { index: id, subIndex: sub_id } };
+    var c = { play: { indices: indices } };
     var cmd = melo.Playlist.Request.create(c);
 
     this.send(melo.Playlist.Request.encode(cmd).finish());
   };
 }
 
-export { open, close, toggle, toggleEdit };
-
-/*** Simultation ***/
-/*
-for (var i = 0; i < 2; i++) {
-  addMedia({id: "", cover: "img:demo/cover.jpg", title: "Title", artist: "The rolling stones", album: "Grrr!"});
-  addMedia({id: "", cover: "fa:folder-open", title: "Title", artist: "Michael Jackson", album: ""});
-  addMedia({id: "", cover: "img:demo/cover1.png", title: "Title", artist: "Michael Jackson", album: "Xspense"});
-  addMedia({id: "", cover: "img:demo/cover2.jpg", title: "Title", artist: "AC/DC", album: "Black ICE"});
-  addMedia({id: "", cover: "img:demo/cover3.jpg", title: "Title", artist: "Supertamp", album: "Breakfast in America"});
-  addMedia({id: "", cover: "img:demo/cover4.jpg", title: "Title", artist: "Norah Jones", album: "Album"});
-  addMedia({id: "", cover: "img:demo/cover5.jpg", title: "Title", artist: "M83", album: "Junk"});
-}
-*/
+export { open, close, toggle, enterEdit, exitEdit, savePlaylist, deleteMedias };

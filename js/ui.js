@@ -33,7 +33,10 @@ document.getElementById('player-close').onclick = Player.close;
 document.getElementById('playlist-open').onclick = Playlist.open;
 document.getElementById('playlist-close').onclick = Playlist.close;
 document.getElementById('playlist-toggle').onclick = Playlist.toggle;
-document.getElementById('playlist-edit').onclick = Playlist.toggleEdit;
+document.getElementById('playlist-edit').onclick = Playlist.enterEdit;
+document.getElementById('playlist-save').onclick = Playlist.savePlaylist;
+document.getElementById('playlist-done').onclick = Playlist.exitEdit;
+document.getElementById('playlist-delete').onclick = Playlist.deleteMedias;
 
 document.addEventListener('click', function (event) {
   hidePopover(event);
