@@ -90,9 +90,15 @@ function open(event) {
         list = list.children[idx].lastElementChild;
       }
       currentActive =  ev.play.indices;
+    } else if (ev.event === "shuffle") {
+      getMediaList();
     }
   };
 
+  getMediaList();
+}
+
+function getMediaList() {
   resetMedias();
 
   /* Get playlist */
@@ -115,13 +121,7 @@ function open(event) {
           resp.mediaList.current.index + ":" + resp.mediaList.current.subIndex);
       addMedias(resp.mediaList.medias);
 
-      var body = document.getElementById('playlist-body');
-      var list = body;
-      for (var idx of currentActive) {
-        list.children[idx].firstElementChild.classList.remove('active');
-        list = list.children[idx].lastElementChild;
-      }
-      list = body;
+      var list = document.getElementById('playlist-body');
       for (var idx of resp.mediaList.current.indices) {
         list.children[idx].firstElementChild.classList.add('active');
         list = list.children[idx].lastElementChild;
@@ -146,6 +146,17 @@ function close() {
 function toggle(event) {
   if (!opened)
     open(event)
+}
+
+function shuffle(event) {
+  var shuffled = !document.getElementById('playlist-shuffle').classList.contains('active');
+  var cmd = melo.Playlist.Request.create( { shuffle: shuffled } );
+  var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
+  req.binaryType = 'arraybuffer';
+  req.onopen = function (event) {
+    this.send(melo.Playlist.Request.encode(cmd).finish());
+  };
+  event.stopPropagation();
 }
 
 function enterEdit() {
@@ -451,4 +462,4 @@ function playMedia(event) {
   };
 }
 
-export { open, close, toggle, enterEdit, exitEdit, savePlaylist, deleteMedias };
+export { open, close, toggle, shuffle, enterEdit, exitEdit, savePlaylist, deleteMedias };

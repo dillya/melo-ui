@@ -36,6 +36,10 @@
   .player-volume input {
     width: 100px;
   }
+
+  .nav-link.active {
+    color: $nav-active-color;
+  }
 }
 
 // Display complete player bar starting from medium devices

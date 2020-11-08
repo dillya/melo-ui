@@ -201,6 +201,13 @@ function startEvent() {
         document.getElementById('playerbar-forward').classList.add('disabled');
         document.getElementById('player-forward').classList.add('disabled');
       }
+      if (ev.playlist.shuffle) {
+        document.getElementById('player-shuffle').classList.add('active');
+        document.getElementById('playlist-shuffle').classList.add('active');
+      } else {
+        document.getElementById('player-shuffle').classList.remove('active');
+        document.getElementById('playlist-shuffle').classList.remove('active');
+      }
     }
   };
   eventWebsocket.onclose = function (event) {

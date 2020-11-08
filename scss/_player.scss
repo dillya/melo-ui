@@ -11,6 +11,10 @@
   .nav {
     flex-wrap: nowrap;
     align-items: center;
+
+    .nav-link.active {
+      color: $nav-active-color;
+    }
   }
 }
 
