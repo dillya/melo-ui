@@ -10,6 +10,7 @@ var melo = require('melo');
 
 // Playlist sheet / side
 var opened = false;
+var repeatMode = 0;
 
 // Event websocket
 var eventWebsocket;
@@ -92,6 +93,8 @@ function open(event) {
       currentActive =  ev.play.indices;
     } else if (ev.event === "shuffle") {
       getMediaList();
+    } else if (ev.event === "repeatMode") {
+      repeatMode = ev.event.repeatMode;
     }
   };
 
@@ -151,6 +154,19 @@ function toggle(event) {
 function shuffle(event) {
   var shuffled = !document.getElementById('playlist-shuffle').classList.contains('active');
   var cmd = melo.Playlist.Request.create( { shuffle: shuffled } );
+  var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
+  req.binaryType = 'arraybuffer';
+  req.onopen = function (event) {
+    this.send(melo.Playlist.Request.encode(cmd).finish());
+  };
+  event.stopPropagation();
+}
+
+function repeat(event) {
+  repeatMode++;
+  if (repeatMode > 2)
+    repeatMode = 0;
+  var cmd = melo.Playlist.Request.create( { setRepeatMode: repeatMode } );
   var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
   req.binaryType = 'arraybuffer';
   req.onopen = function (event) {
@@ -464,4 +480,4 @@ function playMedia(event) {
   };
 }
 
-export { open, close, toggle, shuffle, enterEdit, exitEdit, savePlaylist, deleteMedias };
+export { open, close, toggle, shuffle, repeat, enterEdit, exitEdit, savePlaylist, deleteMedias };

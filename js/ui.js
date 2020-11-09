@@ -30,11 +30,13 @@ document.getElementById('browser-more').onclick = Browser.openMore;
 document.getElementById('player-open').onclick = Player.open;
 document.getElementById('player-close').onclick = Player.close;
 document.getElementById('player-shuffle').onclick = Playlist.shuffle;
+document.getElementById('player-repeat').onclick = Playlist.repeat;
 
 document.getElementById('playlist-open').onclick = Playlist.open;
 document.getElementById('playlist-close').onclick = Playlist.close;
 document.getElementById('playlist-toggle').onclick = Playlist.toggle;
 document.getElementById('playlist-shuffle').onclick = Playlist.shuffle;
+document.getElementById('playlist-repeat').onclick = Playlist.repeat;
 document.getElementById('playlist-edit').onclick = Playlist.enterEdit;
 document.getElementById('playlist-save').onclick = Playlist.savePlaylist;
 document.getElementById('playlist-done').onclick = Playlist.exitEdit;

@@ -208,6 +208,22 @@ function startEvent() {
         document.getElementById('player-shuffle').classList.remove('active');
         document.getElementById('playlist-shuffle').classList.remove('active');
       }
+      if (ev.playlist.repeatMode === 0) {
+        document.getElementById('player-repeat').innerHTML = parseIcon("iconify:ph:repeat-bold");
+        document.getElementById('playlist-repeat').innerHTML = parseIcon("iconify:ph:repeat-bold");
+        document.getElementById('player-repeat').classList.remove('active');
+        document.getElementById('playlist-repeat').classList.remove('active');
+      } else if (ev.playlist.repeatMode === 1) {
+        document.getElementById('player-repeat').innerHTML = parseIcon("iconify:ph:repeat-bold");
+        document.getElementById('playlist-repeat').innerHTML = parseIcon("iconify:ph:repeat-bold");
+        document.getElementById('player-repeat').classList.add('active');
+        document.getElementById('playlist-repeat').classList.add('active');
+      } else {
+        document.getElementById('player-repeat').innerHTML = parseIcon("iconify:ph:repeat-once-bold");
+        document.getElementById('playlist-repeat').innerHTML = parseIcon("iconify:ph:repeat-once-bold");
+        document.getElementById('player-repeat').classList.add('active');
+        document.getElementById('playlist-repeat').classList.add('active');
+      }
     }
   };
   eventWebsocket.onclose = function (event) {
