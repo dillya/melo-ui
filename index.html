@@ -11,8 +11,8 @@
   <!-- Melo CSS -->
   <link rel="stylesheet" href="melo.css">
 
-  <!-- Awesome font -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  <!-- Iconify framework -->
+  <script src="https://code.iconify.design/2/2.0.0-rc.2/iconify.min.js"></script>
 
   <title>Melo</title>
 </head>
@@ -21,7 +21,9 @@
   <nav id="top-bar" class="navbar navbar-expand navbar-dark fixed-top d-md-none">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a id="topbar-toggle" class="nav-link"><i class="fa fa-bars"></i></a>
+        <a id="topbar-toggle" class="nav-link">
+          <span class="iconify" data-icon="fa-solid:bars"></span>
+        </a>
       </li>
     </ul>
     <div class="navbar-brand mr-auto">
@@ -30,7 +32,7 @@
     <ul class="navbar-nav">
       <li class="nav-item">
         <a id="topbar-settings" class="nav-link" href="#">
-          <i class="fa fa-cog"></i>
+          <span class="iconify" data-icon="fa-solid:cog"></span>
         </a>
       </li>
     </ul>
@@ -45,12 +47,12 @@
       <ul class="nav flex-column">
         <li class="nav-item">
           <a id="sidebar-home" class="nav-link active" href="#">
-            <i class="fa fa-home"></i>Home
+          <span class="iconify" data-align="left" data-icon="fa-solid:home"></span>Home
           </a>
         </li>
         <li class="nav-item">
           <a id="sidebar-settings" class="nav-link" href="#">
-            <i class="fa fa-cog"></i>Settings
+          <span class="iconify" data-align="left" data-icon="fa-solid:cog"></span>Settings
           </a>
         </li>
       </ul>
@@ -60,7 +62,7 @@
       <ul id="sidebar-playlists" class="nav flex-column">
         <li class="nav-item">
           <a id="sidebar-playlists-new" class="nav-link" href="#">
-            <i class="fa fa-plus-circle"></i>New playlist
+          <span class="iconify" data-align="left" data-icon="fa-solid:plus-circle"></span>New playlist
           </a>
         </li>
       </ul>
@@ -92,7 +94,7 @@
         <ul class="navbar-nav">
           <li class="nav-item">
             <a id="settings-prev" class="nav-link disabled" href="#">
-              <i class="fa fa-arrow-left"></i>
+              <span class="iconify" data-align="left" data-icon="fa-solid:arrow-left"></span>
             </a>
           </li>
           <li id="settings-title" class="nav-item text-truncate">
@@ -104,22 +106,22 @@
       <ul id="settings-tab" class="nav nav-tabs-top">
         <li class="nav-item">
           <a id="settings-global" class="nav-link active" href="#" data-id="settings-body-global">
-            <i class="fa fa-cog"></i>Global
+          <span class="iconify" data-align="left" data-icon="fa-solid:cog"></span>Global
           </a>
         </li>
         <li class="nav-item">
           <a id="settings-network" class="nav-link" href="#" data-id="settings-body-network">
-            <i class="fa fa-wifi"></i>Network
+          <span class="iconify" data-align="left" data-icon="fa-solid:wifi"></span>Network
           </a>
         </li>
         <li class="nav-item">
           <a id="settings-browsers" class="nav-link" href="#" data-id="settings-body-browsers">
-            <i class="fa fa-folder-open"></i>Browsers
+          <span class="iconify" data-align="left" data-icon="fa-solid:folder-open"></span>Browsers
           </a>
         </li>
         <li class="nav-item">
           <a id="settings-players" class="nav-link" href="#" data-id="settings-body-players">
-            <i class="fa fa-play"></i>Players
+          <span class="iconify" data-align="left" data-icon="fa-solid:play"></span>Players
           </a>
         </li>
       </ul>
@@ -139,7 +141,7 @@
         <ul class="navbar-nav">
           <li class="nav-item">
             <a id="browser-prev" class="nav-link disabled" href="#">
-              <i class="fa fa-arrow-left"></i>
+              <span class="iconify" data-align="left" data-icon="fa-solid:arrow-left"></span>
             </a>
           </li>
           <li id="browser-title" class="nav-item text-truncate"></li>
@@ -147,28 +149,28 @@
         <ul id="browser-nav-search" class="navbar-nav ml-auto ">
           <li id="browser-search-input" class="nav-item ml-auto d-none d-md-block">
             <input type="text" class="form-control" placeholder="Search...">
-            <i class="fa fa-search"></i>
+            <span class="iconify search" data-icon="fa-solid:search"></span>
           </li>
           <li class="nav-item d-md-none">
             <a id="browser-search" class="nav-link" href="#">
-              <i class="fa fa-search"></i>
+              <span class="iconify search" data-icon="fa-solid:search"></span>
             </a>
           </li>
         </ul>
         <ul id="browser-nav-control" class="navbar-nav">
           <li class="nav-item d-none d-md-block">
             <a id="browser-sort" class="nav-link" href="#">
-              <i class="fa fa-sort"></i>
+              <span class="iconify" data-icon="fa-solid:sort"></span>
             </a>
           </li>
           <li class="nav-item d-none d-md-block">
             <a id="browser-display" class="nav-link" href="#">
-              <i class="fa fa-th-list"></i>
+              <span class="iconify" data-icon="fa-solid:th-list"></span>
             </a>
           </li>
           <li class="nav-item">
             <a id="browser-more" class="nav-link" href="#">
-              <i class="fa fa-ellipsis-h"></i>
+              <span class="iconify" data-icon="fa-solid:ellipsis-h"></span>
             </a>
           </li>
         </ul>
@@ -215,13 +217,15 @@
     <ul class="sheet-header nav">
       <li class="nav-item">
         <a id="player-close" class="nav-link" href="#">
-          <i class="fa fa-times-circle"></i>
+          <span class="iconify" data-icon="fa-solid:times-circle"></span>
         </a>
       </li>
       <li class="nav-item sheet-title">Player</li>
     </ul>
     <div id="player-body" class="sheet-body">
-      <div id="player-cover"><i class="fa fa-music"></i></div>
+      <div id="player-cover">
+        <span class="iconify" data-icon="fa-solid:music"></span>
+      </div>
       <div class="player-controls">
         <div class="text-center">
           <h5 class="title text-truncate">---</h5>
@@ -240,24 +244,24 @@
         <ul class="nav justify-content-center">
           <li class="nav-item">
             <a id="player-backward" class="nav-link disabled" href="#">
-              <i class="fa fa-step-backward"></i>
+              <span class="iconify" data-icon="fa-solid:step-backward"></span>
             </a>
           </li>
           <li class="nav-item">
             <a id="player-play" class="nav-link disabled player-play" href="#">
-              <i class="fa fa-play"></i>
+              <span class="iconify" data-icon="fa-solid:play"></span>
             </a>
           </li>
           <li class="nav-item">
             <a id="player-forward" class="nav-link disabled" href="#">
-              <i class="fa fa-step-forward"></i>
+              <span class="iconify" data-icon="fa-solid:step-forward"></span>
             </a>
           </li>
         </ul>
         <ul class="nav justify-content-center">
           <li class="nav-item">
             <a id="player-vol-down" class="nav-link" href="#">
-              <i class="fa fa-volume-down"></i>
+              <span class="iconify" data-icon="fa-solid:volume-down"></span>
             </a>
           </li>
           <li id="player-vol" class="nav-item player-volume">
@@ -265,23 +269,25 @@
           </li>
           <li class="nav-item">
             <a id="player-vol-up" class="nav-link" href="#">
-              <i class="fa fa-volume-up"></i>
+              <span class="iconify" data-icon="fa-solid:volume-up"></span>
             </a>
           </li>
         </ul>
         <ul class="nav justify-content-center">
           <li class="nav-item">
             <a id="playlist-open" class="nav-link" href="#">
-              <i class="fa fa-list"></i>
+              <span class="iconify" data-icon="fa-solid:list"></span>
             </a>
           </li>
           <li class="nav-item">
             <a id="player-shuffle" class="nav-link" href="#">
-              <i class="fa fa-random"></i>
+              <span class="iconify" data-icon="fa-solid:random"></span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#"><i class="fa fa-sync"></i></a>
+            <a id="player-repeat" class="nav-link" href="#">
+              <span class="iconify" data-icon="fa-solid:sync"></span>
+            </a>
           </li>
         </ul>
       </div>
@@ -293,7 +299,7 @@
     <ul class="sheet-header nav">
       <li class="nav-item d-md-none">
         <a id="playlist-close" class="nav-link" href="#">
-          <i class="fa fa-times-circle"></i>
+          <span class="iconify" data-icon="fa-solid:times-circle"></span>
         </a>
       </li>
       <li class="nav-item sheet-title">Playlist</li>
@@ -302,29 +308,29 @@
     <ul id="playlist-controls" class="sheet-footer nav">
       <li class="nav-item">
         <a id="playlist-edit" class="nav-link" href="#">
-          <i class="fa fa-pen"></i>Edit
+          <span class="iconify" data-icon="fa-solid:pen"></span>Edit
         </a>
       </li>
       <li class="nav-item">
         <a id="playlist-save" class="nav-link" href="#">
-          <i class="fa fa-save"></i>Save
+          <span class="iconify" data-icon="fa-solid:save"></span>Save
         </a>
       </li>
     </ul>
     <ul id="playlist-controls-edit" class="sheet-footer nav d-none">
       <li class="nav-item">
         <a id="playlist-done" class="nav-link" href="#">
-          <i class="fa fa-window-close"></i>Done
+          <span class="iconify" data-icon="fa-solid:window-close"></span>Done
         </a>
       </li>
       <li class="nav-item">
         <a id="playlist-select-all" class="nav-link" href="#">
-          <i class="fa fa-check-double"></i>Select all
+          <span class="iconify" data-icon="fa-solid:check-double"></span>Select all
         </a>
       </li>
       <li class="nav-item">
         <a id="playlist-delete" class="nav-link" href="#">
-          <i class="fa fa-trash"></i>Delete
+          <span class="iconify" data-icon="fa-solid:trash"></span>Delete
         </a>
       </li>
     </ul>
@@ -333,7 +339,9 @@
   <!-- Player bar -->
   <div id="player-bar" class="fixed-bottom">
     <div id="player-open" class="media">
-      <div class="media-cover square"><i class="fa fa-music"></i></div>
+      <div class="media-cover square">
+        <span class="iconify" data-icon="fa-solid:music"></span>
+      </div>
       <div class="media-body">
         <h5 class="title">---</h5>
         <h6 class="subtitle">---</h6>
@@ -343,17 +351,17 @@
       <ul class="nav justify-content-center">
         <li class="nav-item d-md-block">
           <a id="playerbar-backward" class="nav-link disabled" href="#">
-            <i class="fa fa-step-backward"></i>
+            <span class="iconify" data-icon="fa-solid:step-backward"></span>
           </a>
         </li>
         <li class="nav-item d-block">
           <a id="playerbar-play" class="nav-link disabled player-play" href="#">
-            <i class="fa fa-play"></i>
+            <span class="iconify" data-icon="fa-solid:play"></span>
           </a>
         </li>
         <li class="nav-item d-md-block">
           <a id="playerbar-forward" class="nav-link disabled" href="#">
-            <i class="fa fa-step-forward"></i>
+            <span class="iconify" data-icon="fa-solid:step-forward"></span>
           </a>
         </li>
       </ul>
@@ -372,22 +380,24 @@
       <ul class="nav justify-content-center">
         <li class="nav-item">
           <a id="playlist-toggle" class="nav-link" href="#">
-            <i class="fa fa-list"></i>
+            <span class="iconify" data-align="left"  data-icon="fa-solid:list"></span>
           </a>
         </li>
         <li class="nav-item">
           <a id="playlist-shuffle" class="nav-link" href="#">
-            <i class="fa fa-random"></i>
+            <span class="iconify" data-align="left"  data-icon="fa-solid:random"></span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#"><i class="fa fa-sync"></i></a>
+          <a id="playlist-repeat" class="nav-link" href="#">
+            <span class="iconify" data-align="left"  data-icon="fa-solid:sync"></span>
+          </a>
         </li>
       </ul>
       <ul class="nav text-center">
         <li class="nav-item">
           <a id="playerbar-vol-down" class="nav-link" href="#">
-            <i class="fa fa-volume-down"></i>
+            <span class="iconify-inline" data-icon="fa-solid:volume-down"></span>
           </a>
         </li>
         <li id="playerbar-vol" class="nav-item player-volume">
@@ -395,7 +405,7 @@
         </li>
         <li class="nav-item">
           <a id="playerbar-vol-up" class="nav-link" href="#">
-            <i class="fa fa-volume-up"></i>
+            <span class="iconify-inline" data-icon="fa-solid:volume-up"></span>
           </a>
         </li>
       </ul>

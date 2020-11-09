@@ -3,7 +3,7 @@
  * Copyright (C) 2020 Alexandre Dilly <dillya@sparod.com>
  */
 
-import { parseCover, extractCover } from './utils.js';
+import { parseIcon, parseCover, extractCover } from './utils.js';
 import { showAlert } from './alert.js';
 
 import * as Settings from './settings.js';
@@ -91,8 +91,7 @@ function startEvent() {
       var ctrl = document.getElementById('playerbar-play');
       var ctrl2 = document.getElementById('player-play');
       if (ev.status.state === 1) { /* playing */
-        ctrl.firstElementChild.className = "fa fa-pause";
-        ctrl2.firstElementChild.className = "fa fa-pause";
+        ctrl.innerHTML = ctrl2.innerHTML = parseIcon("fa:pause");
         if (ev.status.streamState === 0 && !currentTimer)
           currentTimer = setInterval(function() {
             currentPosition += 1000;
@@ -105,8 +104,7 @@ function startEvent() {
             document.getElementById('player-progress').firstElementChild.style.width = percent + "%";
           }, 1000);
       } else { /* !playing */
-        ctrl.firstElementChild.className = "fa fa-play";
-        ctrl2.firstElementChild.className = "fa fa-play";
+        ctrl.innerHTML = ctrl2.innerHTML = parseIcon("fa:play");
         if (currentTimer)
           clearInterval(currentTimer);
         if (ev.status.state !== 2)
@@ -173,13 +171,15 @@ function startEvent() {
       document.getElementById('playerbar-vol').firstElementChild.value = ev.volume.volume * 100;
       document.getElementById('player-vol').firstElementChild.value = ev.volume.volume * 100;
       if (ev.volume.mute) {
-        document.getElementById('playerbar-vol-down').firstElementChild.classList.replace('fa-volume-down', 'fa-volume-mute');
-        document.getElementById('player-vol-down').firstElementChild.classList.replace('fa-volume-down', 'fa-volume-mute');
+        document.getElementById('playerbar-vol-down').innerHTML =
+          document.getElementById('player-vol-down').innerHTML =
+            parseIcon("fa:volume-mute");
         document.getElementById('playerbar-vol').firstElementChild.disabled = true;
         document.getElementById('player-vol').firstElementChild.disabled = true;
       } else {
-        document.getElementById('playerbar-vol-down').firstElementChild.classList.replace('fa-volume-mute', 'fa-volume-down');
-        document.getElementById('player-vol-down').firstElementChild.classList.replace('fa-volume-mute', 'fa-volume-down');
+        document.getElementById('playerbar-vol-down').innerHTML =
+          document.getElementById('player-vol-down').innerHTML =
+            parseIcon("fa:volume-down");
         document.getElementById('playerbar-vol').firstElementChild.disabled = false;
         document.getElementById('player-vol').firstElementChild.disabled = false;
       }

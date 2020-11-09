@@ -7,7 +7,7 @@ import { openActionSheet } from './action.js';
 import { showAlert } from './alert.js';
 import { openModal } from './modal.js';
 import { showPopoverBottom, showPopoverLeft, hidePopover } from './popover.js';
-import { createNavLink, isMobile, parseCover, extractCover } from './utils.js';
+import { createNavLink, isMobile, parseIcon, parseCover, extractCover } from './utils.js';
 
 var melo = require('melo');
 
@@ -268,10 +268,8 @@ function toggleDisplay() {
   list.className = classes.list;
 
   /* Toggle display icon */
-  var ctrl = document.getElementById('browser-display').firstElementChild
-    .classList;
-  ctrl.toggle('fa-th-list');
-  ctrl.toggle('fa-th-large');
+  document.getElementById('browser-display').innerHTML =
+    parseIcon(displayCard ? 'fa:th-large' : 'fa:th-list');
 
   displayCard = !displayCard;
 }
@@ -430,17 +428,15 @@ function addMedias(medias) {
     item.className = classes.item;
     item.dataset.id = media.id;
     item.innerHTML =
-      '<div class="' + classes.check + '"><i class="fa fa-check"></i></div>' +
+      '<div class="' + classes.check + '">' + parseIcon("fa:check") + '</div>' +
       parseCover(cover, classes.cover) +
       '<div class="' + classes.body + '">' +
       '  <h5 class="card-title">' + title + '</h5>' +
       '  <h6 class="card-subtitle">' + subtitle + '</h6>' +
       '</div>' +
       '<div class="' + classes.action + '">' +
-      '  <a class="d-none d-md-inline-block" href="#">' +
-      '    <i class="fa fa-plus"></i>' +
-      '  </a>' +
-      '  <a id="more" href="#"><i class="fa fa-ellipsis-h"></i></a>' +
+      '  <a class="d-none d-md-inline-block" href="#">' + parseIcon("fa:plus") + '</a>' +
+      '  <a href="#">' + parseIcon("fa:ellipsis-h") + '</a>' +
       '</div>';
 
     /* Add play action on cover and body */

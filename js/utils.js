@@ -8,11 +8,13 @@ export function parseIcon(icon) {
     var svg = icon.substring(4);
     return svg.slice(0, 4) + ' preserveAspectRatio="xMinYMin" ' + svg.slice(4);
   } else if (icon.startsWith('fa:'))
-    return '<i class="fa fa-' + icon.substring(3) + '"></i>';
+    return '<span class="iconify" data-align="left" data-icon="fa-solid:' + icon.substring(3) + '"></span>';
   else if (icon.startsWith('fab:'))
-    return '<i class="fab fa-' + icon.substring(4) + '"></i>';
+    return '<span class="iconify" data-align="left" data-icon="fa-brands:' + icon.substring(4) + '"></span>';
+  else if (icon.startsWith('iconify:'))
+    return '<span class="iconify" data-align="left" data-icon="' + icon.substring(8) + '"></span>';
   else
-    return '<i class="fa"></i>';
+    return '<span class="iconify" data-icon=""></span>';
 }
 
 export function parseCover(cover, className) {
@@ -24,7 +26,8 @@ export function parseCover(cover, className) {
 
 export function extractCover(cover) {
   if (cover.startsWith('img:') || cover.startsWith('svg:') ||
-      cover.startsWith('fa:') || cover.startsWith('fab:'))
+      cover.startsWith('fa:') || cover.startsWith('fab:') ||
+      cover.startsWith('iconify:'))
     return cover;
   return "img:asset/" + cover;
 }

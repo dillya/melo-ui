@@ -4,6 +4,7 @@ $brand-logo-width: 30px !default;
 
 // Make element square
 .square {
+  position: relative;
   width: 100%;
 
   &:after {

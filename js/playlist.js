@@ -4,7 +4,7 @@
  */
 
 import { showOverlay } from './overlay.js';
-import { isMobile, parseCover, extractCover } from './utils.js';
+import { isMobile, parseIcon, parseCover, extractCover } from './utils.js';
 
 var melo = require('melo');
 
@@ -227,7 +227,7 @@ function enterEdit() {
 
       /* Multi-drag select */
       onSelect: function(event) {
-        event.item.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+        event.item.children[0].children[0].innerHTML = parseIcon("fa:check");
         lastElement = event.item;
       },
       onDeselect: function(event) {
@@ -323,7 +323,7 @@ function genMedia(media) {
     '  <h6>' + subtitle + '</h6>' +
     '</div>' +
     '<div class="media-action media-edit">' +
-    '  <a href="#"><i class="fa fa-bars"></i></a>' +
+    '  <a href="#">' + parseIcon("fa:bars") + '</a>' +
     '</div>';
 
   /* Set attributes */
@@ -415,6 +415,8 @@ function selectMedia(event) {
     Sortable.utils.deselect(el);
     this.innerHTML = '';
   } else {
+    var check = parseIcon("fa:check");
+
     /* Shift selection */
     if (event.shiftKey && lastElement) {
       var l = getIndex(lastElement);
@@ -424,17 +426,17 @@ function selectMedia(event) {
       if (l < c)
         while ((e = e.nextElementSibling) != el) {
           Sortable.utils.select(e);
-          e.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+          e.children[0].children[0].innerHTML = check;
         }
       else
         while ((e = e.previousElementSibling) != el) {
           Sortable.utils.select(e);
-          e.children[0].children[0].innerHTML = '<i class="fa fa-check"></i>';
+          e.children[0].children[0].innerHTML = check;
         }
     }
 
     Sortable.utils.select(el);
-    this.innerHTML = '<i class="fa fa-check"></i>';
+    this.innerHTML = check;
 
     lastElement = el;
   }

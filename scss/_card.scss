@@ -10,16 +10,12 @@ $card-grid-margin: 5px !default;
 .card-img, .card-img-top, .card-img-bottom {
   background-color: $card-icon-bg-color;
 
-  .fa, .fab {
-    text-align: center;
-    font-size: $card-icon-font-size;
-    padding-top: calc(50% - #{$card-icon-font-size / 2});
-  }
   svg {
     background-color: $card-icon-bg-color;
     fill: $body-color;
     padding: calc(50% - #{$card-icon-font-size / 2});
     width: 100%;
+    height: 100%;
   }
 }
 

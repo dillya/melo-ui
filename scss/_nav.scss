@@ -9,8 +9,9 @@ $nav-top-link-padding-y: 0.5rem !default;
 
 // Set default values
 .nav {
-  .fa, .fab {
+  .iconify {
     min-width: $nav-min-icon-width;
+    display: inline-block;
   }
   svg {
     min-width: $nav-min-icon-width;

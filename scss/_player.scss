@@ -4,7 +4,7 @@
 .player-controls {
   text-align: center;
 
-  .fa {
+  .iconify {
     vertical-align: middle;
   }
 
@@ -19,9 +19,9 @@
 }
 
 // Player play control
-.player-play {
-  font-size: 1.5rem;
-  padding: 0 1rem;
+.player-play > svg {
+  height: 1.5rem;
+//  padding: 0 1rem;
 }
 
 // Player position with progress bar
