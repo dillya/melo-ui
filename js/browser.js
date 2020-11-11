@@ -599,6 +599,7 @@ function actionMedia(event) {
   req.binaryType = 'arraybuffer';
   req.media_id = this.dataset.id;
   req.action_type = this.dataset.type;
+  req.customId = this.dataset.customId;
   req.onopen = function (event) {
     var c = {
       doAction: {
