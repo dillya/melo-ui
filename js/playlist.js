@@ -3,7 +3,9 @@
  * Copyright (C) 2020 Alexandre Dilly <dillya@sparod.com>
  */
 
+import { showAlert } from './alert.js';
 import { showOverlay } from './overlay.js';
+import { openModal } from './modal.js';
 import { isMobile, parseIcon, parseCover, extractCover } from './utils.js';
 
 var melo = require('melo');
@@ -21,6 +23,9 @@ var currentActive = [];
 // Sort object
 var lastElement = null;
 var moveSource;
+
+// Current browser
+var currentBrowser;
 
 /*
  * Display
@@ -92,21 +97,26 @@ function open(event) {
       }
       currentActive =  ev.play.indices;
     } else if (ev.event === "shuffle") {
-      getMediaList();
+      getMediaList(document.getElementById('playlist-body'));
     } else if (ev.event === "repeatMode") {
       repeatMode = ev.event.repeatMode;
     }
   };
 
-  getMediaList();
+  getMediaList(document.getElementById('playlist-body'));
 }
 
-function getMediaList() {
-  resetMedias();
+function openList(id, name) {
+  getMediaList(document.getElementById('playlist-browser-body'), id);
+  currentBrowser = id;
+}
+
+function getMediaList(body, id = null) {
+  body.innerHTML = "";
 
   /* Get playlist */
   var req =
-    new WebSocket("ws://" + location.host + "/api/request/playlist");
+    new WebSocket("ws://" + location.host + "/api/request/playlist" + (id ? "/" + id : ""));
   req.binaryType = 'arraybuffer';
   req.onopen = function (event) {
     var c = { getMediaList: { offset: 0, count: 100 } };
@@ -122,10 +132,12 @@ function getMediaList() {
     if (resp.resp === "mediaList") {
       console.log(resp.mediaList.offset + " - " + resp.mediaList.count + " - " +
           resp.mediaList.current.index + ":" + resp.mediaList.current.subIndex);
-      addMedias(resp.mediaList.medias);
+      addMedias(body, resp.mediaList.medias);
 
-      var list = document.getElementById('playlist-body');
+      var list = body;
       for (var idx of resp.mediaList.current.indices) {
+        if (!list.children[idx])
+          break;
         list.children[idx].firstElementChild.classList.add('active');
         list = list.children[idx].lastElementChild;
       }
@@ -306,12 +318,83 @@ function deleteMedias() {
   event.stopPropagation();
 }
 
+function doRequest(cmd, success_msg) {
+  var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
+  req.binaryType = 'arraybuffer';
+  req.onopen = function (event) {
+    this.send(melo.Playlist.Request.encode(cmd).finish());
+  };
+  req.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var resp = melo.Playlist.Response.decode(msg);
+
+    /* Handle error */
+    if (resp.resp === "error") {
+      showAlert("danger", resp.error);
+      this.had_error = true;
+    }
+  };
+  req.onclose = function (event) {
+    if (!this.had_error)
+      showAlert("info", success_msg);
+  };
+}
+
+function createAndSave(save) {
+  var body = '<form>' +
+  '  <div class="form-group">' +
+  '    <label for="name">Name: </label>' +
+  '    <input type="text" class="form-control" id="name" placeholder="Playlist name">' +
+  '  </div>' +
+  '  <div class="form-group">' +
+  '    <label for="description">Description: </label>' +
+  '    <input type="text" class="form-control" id="description" placeholder="Some description...">' +
+  '  </div>' +
+  '</form>';
+  openModal(save ? "Save current playlist" : "Create new playlist", body, "Ok", "Cancel", function (content) {
+    var form = content.firstElementChild;
+    var name = form['name'].value;
+    var description = form['description'].value;
+    var id = name.replace(" ", "_").toLowerCase();
+    var desc = { id: id, name: name, description: description };
+    if (save)
+      var c = { save: desc };
+    else
+      var c = { create: desc };
+    var cmd = melo.Playlist.Request.create(c);
+
+    doRequest(cmd, "Playlist saved");
+  });
+}
+
 function savePlaylist() {
+  createAndSave(true);
+
   event.stopPropagation();
 }
 
-function resetMedias() {
-  document.getElementById('playlist-body').innerHTML = "";
+function create() {
+  createAndSave(false);
+
+  event.stopPropagation();
+}
+
+function destroy() {
+  var c = { destroy: currentBrowser };
+  var cmd = melo.Playlist.Request.create(c);
+  doRequest(cmd, "Playlist destroyed");
+}
+
+function load() {
+  var c = { load: currentBrowser };
+  var cmd = melo.Playlist.Request.create(c);
+  doRequest(cmd, "Playlist loaded");
+}
+
+function unload() {
+  var c = { load: "" };
+  var cmd = melo.Playlist.Request.create(c);
+  doRequest(cmd, "Playlist unloaded");
 }
 
 function genMedia(media) {
@@ -399,7 +482,7 @@ function addMedia(media) {
   return item;
 }
 
-function addMedias(medias) {
+function addMedias(body, medias) {
   /* Create fragment */
   var frag = document.createDocumentFragment();
 
@@ -407,7 +490,7 @@ function addMedias(medias) {
   for (var media of medias)
     frag.appendChild(addMedia(media));
 
-  document.getElementById('playlist-body').appendChild(frag);
+  body.appendChild(frag);
 }
 
 function getIndex(el) {
@@ -469,8 +552,9 @@ function playMedia(event) {
     indices.unshift(getIndex(el));
     el = el.parentElement.parentElement;
   }
+  var id = el.id === "playlist-browser" ? "/" + currentBrowser : "";
 
-  var req = new WebSocket("ws://" + location.host + "/api/request/playlist");
+  var req = new WebSocket("ws://" + location.host + "/api/request/playlist" + id);
   req.binaryType = 'arraybuffer';
   req.onopen = function (event) {
     var c = { play: { indices: indices } };
@@ -481,3 +565,4 @@ function playMedia(event) {
 }
 
 export { open, close, toggle, shuffle, repeat, enterEdit, exitEdit, savePlaylist, deleteMedias };
+export { create, destroy, load, unload, openList };

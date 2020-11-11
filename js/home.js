@@ -24,14 +24,26 @@ function addCard(parent, id, icon, name, search, callback) {
   insertSorted(parent, card);
 }
 
+function removeCard(parent, id) {
+  for (let e of parent.children)
+    if (e.dataset && e.dataset.id === id) {
+      e.remove();
+      return;
+    }
+}
+
 function addBrowser(id, icon, name, search, callback) {
   addCard(document.getElementById('home-browsers'), id, icon, name, search,
       callback);
 }
 
-function addPlaylist(id, icon, name) {
+function addPlaylist(id, icon, name, callback) {
   addCard(document.getElementById('home-playlists'), id, icon, name, false, 
-      null);
+      callback);
 }
 
-export { addBrowser, addPlaylist };
+function removePlaylist(id) {
+  removeCard(document.getElementById('home-playlists'), id);
+}
+
+export { addBrowser, addPlaylist, removePlaylist };

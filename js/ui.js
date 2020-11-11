@@ -21,11 +21,16 @@ document.getElementById('topbar-toggle').onclick = Sidebar.toggle;
 
 document.getElementById('sidebar-home').onclick = openHome;
 document.getElementById('sidebar-settings').onclick = openSettings;
+document.getElementById('sidebar-playlists-new').onclick = Playlist.create;
 
 document.getElementById('browser-search').onclick = Browser.toggleSearch;
 document.getElementById('browser-sort').onclick = Browser.openSort;
 document.getElementById('browser-display').onclick = Browser.toggleDisplay;
 document.getElementById('browser-more').onclick = Browser.openMore;
+
+document.getElementById('playlist-load').onclick = Playlist.load;
+document.getElementById('playlist-unload').onclick = Playlist.unload;
+document.getElementById('playlist-destroy').onclick = Playlist.destroy;
 
 document.getElementById('player-open').onclick = Player.open;
 document.getElementById('player-close').onclick = Player.close;
@@ -46,27 +51,6 @@ document.addEventListener('click', function (event) {
   hidePopover(event);
   hideOverlay(event);
 });
-
-/*** Start of simulation ***/
-
-/* Add playlists */
-addPlaylist({id: 1, icon: "fa:list", name: "Playlist 1"});
-addPlaylist({id: 2, icon: "fa:list", name: "Playlist 2"});
-addPlaylist({id: 3, icon: "fa:list", name: "Playlist 3"});
-addPlaylist({id: 4, icon: "fa:list", name: "Playlist 4"});
-addPlaylist({id: 5, icon: "fa:list", name: "Playlist 5"});
-addPlaylist({id: 6, icon: "fa:list", name: "Playlist 6"});
-
-function addPlaylist(playlist) {
-  Sidebar.addPlaylist(playlist.id, playlist.icon, playlist.name);
-  Home.addPlaylist(playlist.id, playlist.icon, playlist.name)
-}
-
-function addSettings(settings) {
-  Settings.addTab(settings.id, settings.icon, settings.name);
-}
-
-/*** End of simulation ***/
 
 var currentOpened = document.getElementById('home');
 
@@ -94,6 +78,13 @@ function openBrowser() {
   Browser.open(this.dataset.id, this.dataset.name, this.dataset.search);
 }
 
+function openPlaylist() {
+  Sidebar.setPlaylistActive(this.dataset.id);
+  replaceOpened(document.getElementById('playlist-browser'));
+
+  Playlist.openList(this.dataset.id, this.dataset.name);
+}
+
 var melo = require('melo');
 
 /* Open websocket with Melo */
@@ -109,5 +100,30 @@ ws_ev_bro.onmessage = function (event) {
     Sidebar.addBrowser(desc.id, desc.icon, desc.name, desc.supportSearch, openBrowser);
     Home.addBrowser(desc.id, desc.icon, desc.name, desc.supportSearch, openBrowser);
     Settings.addBrowser(desc.id, desc.icon, desc.name);
+  }
+};
+var ws_ev_plist = new WebSocket("ws://" + location.host + "/api/event/playlist");
+ws_ev_plist.binaryType = 'arraybuffer';
+ws_ev_plist.onmessage = function (event) {
+  var msg = new Uint8Array(event.data);
+  var ev = melo.Playlist.Event.decode(msg);
+
+  /* Handle event */
+  if (ev.event === "created") {
+    var desc = ev.created;
+    if (!desc.icon)
+      desc.icon = "iconify:fa-solid:list";
+    if (!desc.name)
+      desc.name = "No name";
+    Sidebar.addPlaylist(desc.id, desc.icon, desc.name, openPlaylist);
+    Home.addPlaylist(desc.id, desc.icon, desc.name, openPlaylist)
+  } else if (ev.event === "destroyed") {
+    Sidebar.removePlaylist(ev.destroyed);
+    Home.removePlaylist(ev.destroyed);
+  } else if (ev.event === "loaded") {
+    if (ev.loaded !== "default")
+      document.getElementById('playlist-unload').parentElement.classList.remove('d-none');
+    else
+      document.getElementById('playlist-unload').parentElement.classList.add('d-none');
   }
 };

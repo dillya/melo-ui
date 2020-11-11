@@ -44,14 +44,26 @@ function addItem(parent, id, icon, name, search, callback) {
   insertSorted(parent, li);
 }
 
+function removeItem(parent, id) {
+  for (let e of parent.children)
+    if (e.firstChild.dataset && e.firstChild.dataset.id === id) {
+      e.remove();
+      return;
+    }
+}
+
 function addBrowser(id, icon, name, search, callback) {
   addItem(document.getElementById('sidebar-browsers'), id, icon, name, search,
       callback);
 }
 
-function addPlaylist(id, icon, name) {
+function addPlaylist(id, icon, name, callback) {
   addItem(document.getElementById('sidebar-playlists'), id, icon, name, false,
-      null);
+      callback);
+}
+
+function removePlaylist(id) {
+  removeItem(document.getElementById('sidebar-playlists'), id);
 }
 
 /*
@@ -82,6 +94,16 @@ function setBrowserActive(id) {
     }
 }
 
+function setPlaylistActive(id) {
+  var playlists = document.getElementById('sidebar-playlists');
+
+  for (let e of playlists.children)
+    if (e.firstChild.dataset && e.firstChild.dataset.id === id) {
+      replaceActive(e.firstChild);
+      return;
+    }
+}
+
 export { toggle };
-export { setHomeActive, setSettingsActive, setBrowserActive };
-export { addBrowser, addPlaylist };
+export { setHomeActive, setSettingsActive, setBrowserActive, setPlaylistActive };
+export { addBrowser, addPlaylist, removePlaylist };
