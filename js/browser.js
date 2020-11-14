@@ -88,6 +88,30 @@ function open(id, name, search = false) {
     resetTab();
     resetMedias();
 
+    /* Create event websocket */
+    eventWebsocket =
+        new WebSocket("ws://" + location.host + "/api/event/browser/" + id);
+    eventWebsocket.binaryType = 'arraybuffer';
+    eventWebsocket.onmessage = function (event) {
+      var msg = new Uint8Array(event.data);
+      var ev = melo.Browser.Event.decode(msg);
+
+      if (ev.event === "mediaDeleted") {
+        var path = ev.mediaDeleted.replace(/\/+$/, "");
+        if (path.lastIndexOf('/') == 0) {
+          path = path.substr(1);
+          var tabs = document.getElementById('browser-tab');
+          for (var tab of tabs.children) {
+            if (tab.firstChild.dataset.id == path) {
+              tab.remove();
+              break;
+            }
+          }
+        }
+        console.log (ev.mediaDeleted);
+      }
+    };
+
     /* Get root list */
     requestWebsocket =
         new WebSocket("ws://" + location.host + "/api/request/browser/" + id);
