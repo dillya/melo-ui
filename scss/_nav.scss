@@ -18,6 +18,11 @@ $nav-top-link-padding-y: 0.5rem !default;
     height: 16px;
     fill: $body-color;
   }
+  .action > svg {
+    min-width: 0;
+    margin-left: 1rem;
+    color: orange;
+  }
 }
 
 // Separator item

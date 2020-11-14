@@ -680,6 +680,37 @@ function addTabs(medias) {
     });
     li.firstElementChild.dataset.id = media.id;
 
+    /* Add delete / eject */
+    for (var action of media.actions) {
+      if (action.type != 7)
+        continue;
+      var tmp = document.createElement("a");
+      tmp.href = "#";
+      tmp.className = "action";
+      tmp.dataset.id = media.id;
+      tmp.dataset.type = action.type;
+      tmp.innerHTML = parseIcon(action.icon);
+      tmp.onclick = function (event) {
+        var req = new WebSocket("ws://" + location.host + "/api/request/browser/" + currentId);
+        req.binaryType = 'arraybuffer';
+        req.media_id = this.dataset.id;
+        req.onopen = function (event) {
+          var c = { doAction: { path: "/" + this.media_id, type: 7 } };
+          var cmd = melo.Browser.Request.create(c);
+          this.send(melo.Browser.Request.encode(cmd).finish());
+        };
+        req.onmessage = function (event) {
+          var msg = new Uint8Array(event.data);
+          var resp = melo.Browser.Response.decode(msg);
+
+          if (resp.resp === "error")
+            showAlert("danger", resp.error.message);
+        }
+        event.stopPropagation();
+      };
+      li.firstChild.appendChild(tmp);
+    }
+
     /* Append element */
     frag.appendChild(li);
   }
