@@ -41,7 +41,8 @@ var currentPath;
 var currentAuth = "";
 var currentSortMenu = [];
 var currentSort = [];
-var currentActionMenu = [];
+var currentActions = [];
+var currentActionIds = [];
 
 // Current websockets
 var eventWebsocket;
@@ -69,7 +70,8 @@ function open(id, name, search = false) {
     document.getElementById('browser-sort').classList.add('disabled');
 
     /* Reset actions */
-    currentActionMenu = [];
+    currentActions = [];
+    currentActionIds = [];
 
     /* Close previously opened websockets */
     if (eventWebsocket)
@@ -96,7 +98,9 @@ function open(id, name, search = false) {
       var msg = new Uint8Array(event.data);
       var ev = melo.Browser.Event.decode(msg);
 
-      if (ev.event === "mediaDeleted") {
+      if (ev.event === "mediaCreated") {
+        console.log ("created:" + ev.mediaCreated);
+      } else if (ev.event === "mediaDeleted") {
         var path = ev.mediaDeleted.replace(/\/+$/, "");
         if (path.lastIndexOf('/') == 0) {
           path = path.substr(1);
@@ -108,7 +112,7 @@ function open(id, name, search = false) {
             }
           }
         }
-        console.log (ev.mediaDeleted);
+        console.log ("deleted:" + ev.mediaDeleted);
       }
     };
 
@@ -130,7 +134,7 @@ function open(id, name, search = false) {
       if (resp.resp !== "mediaList")
         return;
 
-      addTabs(resp.mediaList.items);
+      addTabs(resp.mediaList.items, resp.mediaList.actions);
 
       currentPath = "/" + resp.mediaList.items[0].id;
     };
@@ -196,7 +200,8 @@ function get_list(path, offset, token)
 
       /* Update action menu */
       if (!resp.mediaList.offset) {
-        currentActionMenu = resp.mediaList.actions.slice();
+        currentActions = resp.mediaList.actions.slice();
+        currentActionIds = resp.mediaList.actionIds.slice();
       }
 
       /* Add "load more" item */
@@ -336,8 +341,10 @@ function openMore(event) {
   var custom = 0;
 
   /* Add basic actions */
-  for (let action of currentActionMenu) {
-    if (action.type == 16) {
+  for (let id of currentActionIds) {
+    var action = currentActions[id];
+
+    if (action.type == 0) {
       custom++;
       continue;
     }
@@ -364,8 +371,10 @@ function openMore(event) {
     list.appendChild(createNavLink());
 
     /* Add custom actions */
-    for (let action of currentActionMenu) {
-      if (action.type != 16)
+    for (let id of currentActionIds) {
+      var action = currentActions[id];
+
+      if (action.type != 0)
         continue;
 
       /* Set icon */
@@ -380,7 +389,7 @@ function openMore(event) {
     }
   }
 
-  if (currentActionMenu.length > 0)
+  if (currentActionIds.length > 0)
     list.appendChild(createNavLink());
 
   /* Add sort / display for mobile */
@@ -479,7 +488,7 @@ function addMedias(medias) {
     actions.children[0].onclick = addMedia;
     actions.children[1].dataset.id = media.id;
     actions.children[1].dataset.name = title || media.id;
-    actions.children[1].actions = media.actions.slice();
+    actions.children[1].actionIds = media.actionIds.slice();
     actions.children[1].onclick = openMediaAction;
 
     /* Append item */
@@ -549,8 +558,10 @@ function openMediaAction(event) {
   list.className = 'nav flex-column';
 
   /* Add basic actions */
-  for (let action of this.actions) {
-    if (action.type == 16) {
+  for (let action_id of this.actionIds) {
+    var action = currentActions[action_id];
+
+    if (action.type == 0) {
       custom++;
       continue;
     }
@@ -585,8 +596,10 @@ function openMediaAction(event) {
     list.appendChild(createNavLink());
 
     /* Add custom actions */
-    for (let action of this.actions) {
-      if (action.type != 16)
+    for (let action_id of this.actionIds) {
+      var action = currentActions[action_id];
+
+      if (action.type != 0)
         continue;
 
       /* Set icon */
@@ -687,7 +700,7 @@ function resetTab() {
   document.getElementById('browser-tab').innerHTML = "";
 }
 
-function addTabs(medias) {
+function addTabs(medias, actions) {
   /* Create fragment */
   var frag = document.createDocumentFragment();
 
@@ -705,8 +718,10 @@ function addTabs(medias) {
     li.firstElementChild.dataset.id = media.id;
 
     /* Add delete / eject */
-    for (var action of media.actions) {
-      if (action.type != 7)
+    for (var id of media.actionIds) {
+      var action = actions[id];
+
+      if (action.type != 10)
         continue;
       var tmp = document.createElement("a");
       tmp.href = "#";
@@ -719,7 +734,7 @@ function addTabs(medias) {
         req.binaryType = 'arraybuffer';
         req.media_id = this.dataset.id;
         req.onopen = function (event) {
-          var c = { doAction: { path: "/" + this.media_id, type: 7 } };
+          var c = { doAction: { path: "/" + this.media_id, type: 10 } };
           var cmd = melo.Browser.Request.create(c);
           this.send(melo.Browser.Request.encode(cmd).finish());
         };
