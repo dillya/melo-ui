@@ -186,6 +186,16 @@
 
       <!-- Browser body -->
       <div id="browser-body">
+        <!-- Browser upload -->
+        <div id="browser-upload" class="d-none">
+          <div id="browser-progress" class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <div class="p-2">
+            <span></span>
+            <button id="browser-cancel" type="button" class="btn btn-sm btn-primary">Cancel</button>
+          </div>
+        </div>
         <!-- Browser media list / grid -->
         <div id="browser-list" class="card-grid"></div>
 
@@ -194,6 +204,8 @@
           <div id="arrow" class="arrow"></div>
           <div class="popover-body"></div>
         </div>
+        <!-- Drop overlay -->
+        <div id="browser-drop" class="d-none"></div>
       </div>
     </div>
 

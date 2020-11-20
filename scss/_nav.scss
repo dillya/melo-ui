@@ -23,6 +23,16 @@ $nav-top-link-padding-y: 0.5rem !default;
     margin-left: 1rem;
     color: orange;
   }
+
+  label {
+    color: $link-color;
+    cursor: pointer;
+    margin: 0;
+
+    &:hover {
+      color: $link-hover-color;
+    }
+  }
 }
 
 // Separator item

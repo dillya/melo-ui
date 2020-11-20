@@ -30,6 +30,26 @@
 // Browser body
 #browser-body {
   position: relative;
+  min-height: 50%;
+}
+
+// Browser upload status
+#browser-upload {
+  background-color: $nav-bg;
+  border-bottom: $border-width solid $border-color;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .progress {
+    margin: .5rem;
+    min-width: 200px;
+    flex-grow: 1;
+  }
+  .progress-bar {
+    width: 0%;
+    transition: none;
+  }
 }
 
 // Browser media list
@@ -42,4 +62,15 @@
     font-size: $font-size-base;
     font-weight: bold;
   }
+}
+
+// Browser drop zone
+#browser-drop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: $drop-bg;
+  opacity: .5;
 }

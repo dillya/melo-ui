@@ -43,6 +43,7 @@ var currentSortMenu = [];
 var currentSort = [];
 var currentActions = [];
 var currentActionIds = [];
+var currentSupportPut;
 
 // Current websockets
 var eventWebsocket;
@@ -72,6 +73,7 @@ function open(id, name, search = false) {
     /* Reset actions */
     currentActions = [];
     currentActionIds = [];
+    currentSupportPut = null;
 
     /* Close previously opened websockets */
     if (eventWebsocket)
@@ -99,7 +101,11 @@ function open(id, name, search = false) {
       var ev = melo.Browser.Event.decode(msg);
 
       if (ev.event === "mediaCreated") {
-        console.log ("created:" + ev.mediaCreated);
+        if (currentPath)
+          listMedias(currentPath);
+      } else if (ev.event === "mediaRenamed") {
+        if (currentPath)
+          listMedias(currentPath);
       } else if (ev.event === "mediaDeleted") {
         var path = ev.mediaDeleted.replace(/\/+$/, "");
         if (path.lastIndexOf('/') == 0) {
@@ -108,6 +114,15 @@ function open(id, name, search = false) {
           for (var tab of tabs.children) {
             if (tab.firstChild.dataset.id == path) {
               tab.remove();
+              break;
+            }
+          }
+        } else {
+          var list = document.getElementById('browser-list');
+          var id = path.substr(path.lastIndexOf('/') + 1);
+          for (var item of list.children) {
+            if (item.dataset.id === id) {
+              item.remove();
               break;
             }
           }
@@ -141,7 +156,7 @@ function open(id, name, search = false) {
     requestWebsocket.onclose = function (event) {
       /* TODO: list */
       if (currentPath) {
-        list(currentPath);
+        listMedias(currentPath);
         document.getElementById('browser-tab').firstElementChild.firstElementChild.classList.add('active');
       }
     };
@@ -178,6 +193,40 @@ function get_list(path, offset, token)
     if (resp.resp === "mediaList") {
       addMedias(resp.mediaList.items);
 
+      /* Enable drop zone */
+      var body = document.getElementById('browser-body');
+      if (resp.mediaList.supportPut) {
+        body.ondragover = function (event) {
+          document.getElementById('browser-drop').classList.remove('d-none');
+          event.preventDefault();
+        };
+        body.ondragleave = function (event) {
+          document.getElementById('browser-drop').classList.add('d-none');
+          event.preventDefault();
+        };
+        body.ondrop = function (event) {
+          event.preventDefault();
+
+          var files = [];
+          if (event.dataTransfer.items) {
+            for (var i = 0; i < event.dataTransfer.items.length; i++) {
+              if (event.dataTransfer.items[i].kind === 'file') {
+                var file = event.dataTransfer.items[i].getAsFile();
+                files.push(file);
+              }
+            }
+          } else {
+            for (var i = 0; i < event.dataTransfer.files.length; i++) {
+              files.push(event.dataTransfer.files[i]);
+            }
+          }
+          putMedia(files);
+
+          document.getElementById('browser-drop').classList.add('d-none');
+        };
+      } else
+        body.ondragover = body.ondragleave = body.ondrop = null;
+
       /* Update sort menu */
       if (!resp.mediaList.offset) {
         var first = true;
@@ -202,6 +251,7 @@ function get_list(path, offset, token)
       if (!resp.mediaList.offset) {
         currentActions = resp.mediaList.actions.slice();
         currentActionIds = resp.mediaList.actionIds.slice();
+        currentSupportPut = resp.mediaList.supportPut;
       }
 
       /* Add "load more" item */
@@ -235,7 +285,7 @@ function get_list(path, offset, token)
             currentAuth += domain + ':';
           currentAuth += user + ':' + pass;
 
-          list(currentPath);
+          listMedias(currentPath);
         });
       } else {
         showAlert("danger", resp.error.message);
@@ -244,7 +294,7 @@ function get_list(path, offset, token)
   }
 }
 
-function list(path) {
+function listMedias(path) {
   requestWebsocket.close();
   resetMedias();
 
@@ -265,7 +315,7 @@ function list(path) {
 
 function previous() {
   var last = currentPath.lastIndexOf('/');
-  list(currentPath.substring(0, last));
+  listMedias(currentPath.substring(0, last));
 }
 
 function toggleSearch() {
@@ -326,7 +376,7 @@ function createSortMenu() {
 
 function setSort(event) {
   currentSort[this.dataset.menu_id] = this.dataset.id;
-  list(currentPath);
+  listMedias(currentPath);
 }
 
 function openSort(event) {
@@ -361,9 +411,14 @@ function openMore(event) {
         var icon = action.icon;
 
     /* Create link */
-    var item = createNavLink(icon, action.name, actionMedia);
+    if (action.type === 6 || action.type === 7)
+      var item = createNavLink(icon, action.name, createRenameFolder);
+    else
+      var item = createNavLink(icon, action.name, actionMedia);
     item.firstElementChild.dataset.id = "";
     item.firstElementChild.dataset.type = action.type;
+    if (action.type === 6 || action.type === 7)
+      item.firstElementChild.dataset.title = action.name;
     list.appendChild(item);
   }
 
@@ -391,6 +446,25 @@ function openMore(event) {
 
   if (currentActionIds.length > 0)
     list.appendChild(createNavLink());
+
+  /* Add file upload */
+  if (currentSupportPut) {
+    var item = document.createElement('li');
+    item.className = 'nav-item';
+    item.innerHTML =
+      '<form>' +
+      '  <input class="d-none" type="file" name="files[]" id="put_file" multiple/>' +
+      '  <label class="nav-link" for="put_file">' + parseIcon("fa:file-upload") + 'Upload file(s)</label>' +
+      '</form>';
+    item.firstElementChild.firstElementChild.onchange = function (event) {
+      var files = [];
+      for (var file of this.files)
+        files.push(file);
+      putMedia(files);
+    };
+    list.appendChild(item);
+    list.appendChild(createNavLink());
+  }
 
   /* Add sort / display for mobile */
   if (isMobile()) {
@@ -578,10 +652,15 @@ function openMediaAction(event) {
         var icon = action.icon;
 
     /* Create link */
-    var item = createNavLink(icon, action.name, actionMedia);
+    if (action.type === 6 || action.type === 7)
+      var item = createNavLink(icon, action.name, createRenameFolder);
+    else
+      var item = createNavLink(icon, action.name, actionMedia);
     item.firstElementChild.dataset.id = id;
     if (action.type === 2)
       item.firstElementChild.dataset.name = this.dataset.name;
+    else if (action.type === 6 || action.type === 7)
+      item.firstElementChild.dataset.title = action.name;
     item.firstElementChild.dataset.type = action.type;
     list.appendChild(item);
   }
@@ -627,7 +706,7 @@ function openMediaAction(event) {
  */
 
 function openMedia(event) {
-  list(currentPath + "/" + this.dataset.id);
+  listMedias(currentPath + "/" + this.dataset.id);
 }
 
 function actionMedia(event) {
@@ -682,6 +761,76 @@ function addMedia(event) {
   showAlert("info", this.dataset.name + " added");
 }
 
+function createRenameFolder(event) {
+  var body = '<form data-id="' + this.dataset.id + '" data-type="' + this.dataset.type + '">' +
+  '  <div class="form-group">' +
+  '    <label for="username">Name: </label>' +
+  '    <input type="text" class="form-control" id="name">' +
+  '  </div>' +
+  '</form>';
+  openModal(this.dataset.title, body, "Ok", "Cancel", function (content) {
+    var form = content.firstElementChild;
+    var name = form['name'].value;
+    var req = new WebSocket("ws://" + location.host + "/api/request/browser/" + currentId);
+    req.binaryType = 'arraybuffer';
+    req.onopen = function (event) {
+      var path = currentPath;
+      if (form.dataset.type == 7)
+        path += '/' + form.dataset.id;
+      var c = { doAction: { path: path, type: form.dataset.type, name: name } };
+      var cmd = melo.Browser.Request.create(c);
+
+      this.send(melo.Browser.Request.encode(cmd).finish());
+    };
+    req.onmessage = function (event) {
+      var msg = new Uint8Array(event.data);
+      var resp = melo.Browser.Response.decode(msg);
+
+      if (resp.resp === "error")
+        showAlert("danger", resp.error.message);
+    };
+  });
+}
+
+function putMedia(files) {
+  var up = document.getElementById('browser-upload');
+  var reader = new FileReader();
+  var xhr = new XMLHttpRequest();
+
+  /* End of upload */
+  if (!files || files.length === 0) {
+    up.classList.add('d-none');
+    return;
+  }
+  var file = files.pop();
+
+  /* Display upload progress */
+  up.classList.remove('d-none');
+  up.lastElementChild.firstElementChild.textContent = "Uploading " + file.name;
+
+  /* Set progress bar */
+  var progress_element = up.firstElementChild.firstElementChild;
+  progress_element.style.width = "0%";
+
+  /* Set progress callbacks */
+  var size = file.size;
+  xhr.upload.addEventListener("progress", function(e) {
+    if (e.lengthComputable)
+      var percent = Math.round((e.loaded * 100) / e.total);
+    else
+      var percent = Math.round((e.loaded * 100) / size);
+    progress_element.style.width = percent + "%";
+  }, false);
+  xhr.upload.addEventListener("load", function(e){
+    progress_element.style.width = "100%";
+    putMedia(files);
+  }, false);
+
+  /* Start PUT request */
+  xhr.open("PUT", "/media/" + currentId + currentPath + "/" + file.name);
+  xhr.send(file);
+}
+
 function displayMediaInfo(event) {
   openModal(this.dataset.name, "Not yet implemented", "Done");
 }
@@ -689,7 +838,7 @@ function displayMediaInfo(event) {
 document.getElementById('browser-search-input').firstElementChild.onkeyup = function(event) {
   if (event.key === "Enter") {
     console.log("search:" + event.currentTarget.value);
-    list("search:" + event.currentTarget.value);
+    listMedias("search:" + event.currentTarget.value);
   }
 };
 
@@ -710,7 +859,7 @@ function addTabs(medias, actions) {
       : "fa:folder";
     /* Create list element */
     var li = createNavLink(cover, media.name, function (event) {
-      list("/" + event.currentTarget.dataset.id);
+      listMedias("/" + event.currentTarget.dataset.id);
       for (var el of document.getElementById('browser-tab').children)
         el.firstElementChild.classList.remove('active');
       event.currentTarget.classList.add('active');
@@ -762,28 +911,3 @@ function addTabs(medias, actions) {
 }
 
 export { open, toggleSearch, toggleDisplay, openSort, openMore };
-
-/*** Simulation ***/
-
-/*
-addTab({id: 1, icon: "fa:folder-open", name: "Local"});
-addTab({id: 2, icon: "fa:network-wired", name: "Network"});
-addTab({id: 3, icon: "fa:hdd", name: "USB drive A"});
-addTab({id: 4, icon: "fab:usb", name: "USB drive B"});
-addTab({id: 5, icon: "fab:usb", name: "USB drive C"});
-*/
-for (var i = 0; i < 15; i++) {
-  var medias = [
-    {id: "rol", cover: "img:demo/cover.jpg", title: "Title", artist: "The rolling stones", album: "Grrr!"},
-    {id: "fol", cover: "fa:folder-open", title: "Title", artist: "Michael Jackson", album: ""},
-    {id: "mic", cover: "img:demo/cover1.png", title: "Title", artist: "Michael Jackson", album: "Xspense"},
-    {id: "acd", cover: "img:demo/cover2.jpg", title: "Title", artist: "AC/DC", album: "Black ICE"},
-    {id: "sup", cover: "img:demo/cover3.jpg", title: "Title", artist: "Supertamp", album: "Breakfast in America"},
-    {id: "nor", cover: "img:demo/cover4.jpg", title: "Title", artist: "Norah Jones", album: "Album"},
-    {id: "m83", cover: "img:demo/cover5.jpg", title: "Title", artist: "M83", album: "Junk"},
-  ];
-
-  //addMedias(medias);
-}
-
-export { addMedias };
