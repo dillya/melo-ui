@@ -732,6 +732,13 @@ function actionMedia(event) {
 
     this.send(melo.Browser.Request.encode(cmd).finish());
   };
+  req.onmessage = function (event) {
+    var msg = new Uint8Array(event.data);
+    var resp = melo.Browser.Response.decode(msg);
+
+    if (resp.resp === "error")
+      showAlert("danger", resp.error.message);
+  };
   if (this.dataset.type == 2)
     showAlert("info", this.dataset.name + " added");
   console.log("action: " + this.dataset.id + "/" + this.dataset.type);
