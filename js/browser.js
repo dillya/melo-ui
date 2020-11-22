@@ -195,17 +195,21 @@ function get_list(path, offset, token)
 
       /* Enable drop zone */
       var body = document.getElementById('browser-body');
+      var drop = document.getElementById('browser-drop');
       if (resp.mediaList.supportPut) {
         body.ondragover = function (event) {
-          document.getElementById('browser-drop').classList.remove('d-none');
+          drop.classList.remove('d-none');
           event.preventDefault();
+          event.stopPropagation();
         };
-        body.ondragleave = function (event) {
-          document.getElementById('browser-drop').classList.add('d-none');
+        drop.ondragleave = function (event) {
+          drop.classList.add('d-none');
           event.preventDefault();
+          event.stopPropagation();
         };
-        body.ondrop = function (event) {
+        drop.ondrop = function (event) {
           event.preventDefault();
+          event.stopPropagation();
 
           var files = [];
           if (event.dataTransfer.items) {
@@ -222,7 +226,7 @@ function get_list(path, offset, token)
           }
           putMedia(files);
 
-          document.getElementById('browser-drop').classList.add('d-none');
+          drop.classList.add('d-none');
         };
       } else
         body.ondragover = body.ondragleave = body.ondrop = null;
