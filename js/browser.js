@@ -18,7 +18,8 @@ const listClasses = {
     check: 'd-none',
     cover: 'card-img-top square',
     body: 'card-body',
-    action: 'd-none',
+    action: 'card-action',
+    add: '',
   },
   media: {
     list: 'media-list',
@@ -27,6 +28,7 @@ const listClasses = {
     cover: 'media-cover square',
     body: 'media-body',
     action: 'media-action',
+    add: 'd-none d-md-inline-block',
   },
 };
 
@@ -191,7 +193,7 @@ function get_list(path, offset, token)
 
     /* Handle message */
     if (resp.resp === "mediaList") {
-      addMedias(resp.mediaList.items);
+      addMedias(resp.mediaList);
 
       /* Enable drop zone */
       var body = document.getElementById('browser-body');
@@ -337,11 +339,20 @@ function toggleDisplay() {
   /* Replace classes of medias */
   for (let item of list.children) {
     item.className = classes.item;
-    if (item.children.length == 4) {
+    if (item.children.length > 2) {
       item.children[0].className = classes.check;
       item.children[1].className = classes.cover;
       item.children[2].className = classes.body;
-      item.children[3].className = classes.action;
+      if (displayCard) {
+        var action = item.children[1].lastElementChild;
+        item.appendChild(action);
+      } else {
+        var action = item.children[3];
+        action.className = classes.action;
+        item.children[1].appendChild(action);
+      }
+      action.className = classes.action;
+      action.firstElementChild.className = classes.add;
     } else {
       item.children[0].className = classes.body;
     }
@@ -513,8 +524,9 @@ function resetMedias() {
   document.getElementById('browser-list').innerHTML = "";
 }
 
-function addMedias(medias) {
+function addMedias(media_list) {
   const classes = displayCard ? listClasses.card : listClasses.media
+  var medias = media_list.items;
 
   /* Create fragment */
   var frag = document.createDocumentFragment();
@@ -535,6 +547,11 @@ function addMedias(medias) {
       var cover = "fa:music";
     else
       var cover = "fa:folder";
+    var fav = media.type !== 1 ? 'd-none' : '';
+    if (media.favorite)
+      var star = parseIcon("iconify:fa-solid:star");
+    else
+      var star = parseIcon("iconify:fa-regular:star");
 
     /* Create item element */
     var item = document.createElement('div');
@@ -546,11 +563,42 @@ function addMedias(medias) {
       '<div class="' + classes.body + '">' +
       '  <h5 class="card-title">' + title + '</h5>' +
       '  <h6 class="card-subtitle">' + subtitle + '</h6>' +
-      '</div>' +
-      '<div class="' + classes.action + '">' +
-      '  <a class="d-none d-md-inline-block" href="#">' + parseIcon("fa:plus") + '</a>' +
-      '  <a href="#">' + parseIcon("fa:ellipsis-h") + '</a>' +
       '</div>';
+
+    /* Detect actions */
+    var can_add = false;
+    var can_set_fav = false;
+    for (var id of media.actionIds) {
+      if (id >= media_list.actions.length)
+        continue;
+      switch (media_list.actions[id].type) {
+        case 2:
+          can_add = true;
+          break;
+        case 3:
+        case 4:
+          can_set_fav = true;
+          break;
+      }
+    }
+
+    /* Prepare actions */
+    var action_html = "";
+    if (can_add)
+      action_html += '<a class="' + classes.add + '" href="#">' + parseIcon("fa:plus") + '</a>';
+    if (can_set_fav)
+      action_html += '<a class="' + fav + '" href="#">' + star + '</a>';
+    action_html += '<a href="#">' + parseIcon("fa:ellipsis-h") + '</a>';
+
+    /* Create action element */
+    var action = document.createElement('div');
+    action.className = classes.action;
+    action.innerHTML = action_html;
+
+    if (displayCard)
+      item.children[1].appendChild(action);
+    else
+      item.appendChild(action);
 
     /* Add play action on cover and body */
     // TODO: set on item and stop propagation
@@ -562,14 +610,23 @@ function addMedias(medias) {
       item.children[1].onclick = item.children[2].onclick = openMedia;
 
     /* Add actions */
-    var actions = item.lastElementChild;
-    actions.children[0].dataset.id = media.id;
-    actions.children[0].dataset.name = title || media.id;
-    actions.children[0].onclick = addMedia;
-    actions.children[1].dataset.id = media.id;
-    actions.children[1].dataset.name = title || media.id;
-    actions.children[1].actionIds = media.actionIds.slice();
-    actions.children[1].onclick = openMediaAction;
+    var actions = action.children;
+    var i = 0;
+    if (can_add) {
+      actions[i].dataset.id = media.id;
+      actions[i].dataset.name = title || media.id;
+      actions[i++].onclick = addMedia;
+    }
+    if (can_set_fav) {
+      actions[i].dataset.id = media.id;
+      actions[i].dataset.fav = media.favorite;
+      actions[i].dataset.name = title || media.id;
+      actions[i++].onclick = setFavorite;
+    }
+    actions[i].dataset.id = media.id;
+    actions[i].dataset.name = title || media.id;
+    actions[i].actionIds = media.actionIds.slice();
+    actions[i].onclick = openMediaAction;
 
     /* Append item */
     frag.appendChild(item);
@@ -620,7 +677,7 @@ function updateMedia(media) {
           temp.innerHTML = parseCover(extractCover(media.tags.cover),
             classes.cover);
 
-          el.children[1].replaceWith(temp.firstElementChild);
+          el.children[1].firstElementChild.replaceWith(temp.firstElementChild);
         }
 
         var actions = el.lastElementChild;
@@ -706,6 +763,7 @@ function openMediaAction(event) {
     showPopover("left", this, document.getElementById('browser-media-popover'),
       list);
 
+  event.preventDefault();
   event.stopPropagation();
 }
 
@@ -760,6 +818,7 @@ function playMedia(event) {
     this.send(melo.Browser.Request.encode(cmd).finish());
   };
   console.log("Play: " + this.dataset.id);
+  event.stopPropagation();
 }
 
 function addMedia(event) {
@@ -774,6 +833,31 @@ function addMedia(event) {
     this.send(melo.Browser.Request.encode(cmd).finish());
   };
   showAlert("info", this.dataset.name + " added");
+  event.stopPropagation();
+}
+
+function setFavorite(event) {
+  var path = currentPath.startsWith("search:") ? "search:" : currentPath + "/";
+  var type = this.dataset.fav == "true" ? 4 : 3;
+  var el = this;
+  var req = new WebSocket("ws://" + location.host + "/api/request/browser/" + currentId);
+  req.binaryType = 'arraybuffer';
+  req.onopen = function (event) {
+    var c = { doAction: { path: path + el.dataset.id , type: type } };
+    var cmd = melo.Browser.Request.create(c);
+
+    this.send(melo.Browser.Request.encode(cmd).finish());
+  };
+  req.onclose = function (event) {
+    if (type === 4) {
+      el.innerHTML = parseIcon("iconify:fa-regular:star");
+      el.dataset.fav = false;
+    } else {
+      el.innerHTML = parseIcon("iconify:fa-solid:star");
+      el.dataset.fav = true;
+    }
+  };
+  event.stopPropagation();
 }
 
 function createRenameFolder(event) {

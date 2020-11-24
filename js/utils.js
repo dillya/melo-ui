@@ -19,7 +19,7 @@ export function parseIcon(icon) {
 
 export function parseCover(cover, className) {
   if (cover.startsWith('img:'))
-    return '<img class="' + className + '" src="' + cover.substring(4) + '">';
+    return '<div class="' + className + '"><img src="' + cover.substring(4) + '"></div>';
   else
     return '<div class="' + className + '">' + parseIcon(cover) + '</div>';
 }

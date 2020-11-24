@@ -6,11 +6,13 @@ $card-icon-font-size: 40px !default;
 $card-grid-wdith: 140px !default;
 $card-grid-margin: 5px !default;
 
+$card-action-padding: 0.3rem;
+
 // Display centered icon in a .card-img
 .card-img, .card-img-top, .card-img-bottom {
   background-color: $card-icon-bg-color;
 
-  svg {
+  > svg {
     background-color: $card-icon-bg-color;
     fill: $body-color;
     padding: calc(50% - #{$card-icon-font-size / 2});
@@ -52,5 +54,20 @@ $card-grid-margin: 5px !default;
 
   > .card {
     margin: $card-grid-margin;
+  }
+}
+
+// Card actions
+.card-action {
+  background-color: $card-icon-bg-color;
+  position: absolute;
+  bottom: $card-action-padding;
+  right: $card-action-padding;
+  padding: $card-action-padding;
+  opacity: 0.7;
+  border-radius: 0.5rem;
+
+  a {
+    padding: 0.5rem;
   }
 }

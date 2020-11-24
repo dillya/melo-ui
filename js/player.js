@@ -73,7 +73,7 @@ function startEvent() {
         temp.innerHTML = parseCover(extractCover(ev.media.tags.cover), "media-cover square");
       else
         temp.innerHTML = parseCover("fa:music", "media-cover square");
-      var temp2 = temp.cloneNode(true);
+      var temp2 = temp.firstElementChild.cloneNode(true);
       media.firstElementChild.replaceWith(temp.firstElementChild);
       temp2.firstElementChild.id = "player-cover";
       temp2.firstElementChild.className = "";
