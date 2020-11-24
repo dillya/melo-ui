@@ -8,13 +8,17 @@ export function parseIcon(icon) {
     var svg = icon.substring(4);
     return svg.slice(0, 4) + ' preserveAspectRatio="xMinYMin" ' + svg.slice(4);
   } else if (icon.startsWith('fa:'))
-    return '<span class="iconify" data-align="left" data-icon="fa-solid:' + icon.substring(3) + '"></span>';
+    icon = "fa-solid:" + icon.substring(3);
   else if (icon.startsWith('fab:'))
-    return '<span class="iconify" data-align="left" data-icon="fa-brands:' + icon.substring(4) + '"></span>';
+    icon = "fa-brands:" + icon.substring(4);
   else if (icon.startsWith('iconify:'))
-    return '<span class="iconify" data-align="left" data-icon="' + icon.substring(8) + '"></span>';
+    icon = icon.substring(8);
   else
-    return '<span class="iconify" data-icon=""></span>';
+    icon = "";
+
+  if (Iconify.iconExists(icon))
+    return Iconify.getSVG(icon, { 'data-align': 'left' });
+  return '<span class="iconify" data-align="left" data-icon="' + icon + '"></span>';
 }
 
 export function parseCover(cover, className) {
