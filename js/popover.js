@@ -4,8 +4,9 @@
  */
 
 var currentPopover;
+var currentInstance = null;
 
-function show(element, content) {
+function showPopover(dir, button, element, content) {
   /* Replace current popover */
   if (currentPopover)
     currentPopover.style.display = 'none';
@@ -18,56 +19,16 @@ function show(element, content) {
 
   /* Display popover */
   element.style.display = 'block';
-}
 
-function showPopoverBottom(event, element, content) {
-  show(element, content);
+  /* Replace instance */
+  if (currentInstance)
+    currentInstance.destroy();
+  currentInstance = Popper.createPopper(button, element, {
+    placement: dir,
+    modifiers: [ { name: 'offset', options: { offset: [0, 8], }, }, ],
+  });
 
-  var px = event.currentTarget.offsetLeft + (event.currentTarget.offsetWidth / 2) - (element.offsetWidth / 2);
-  var py = event.currentTarget.offsetTop + event.currentTarget.offsetHeight;
-  var ax = (element.offsetWidth / 2) - (element.firstElementChild.offsetWidth / 2);
-  var diff = px + element.offsetWidth + 16 - element.offsetParent.offsetWidth;
-
-  if (diff > 0) {
-    px -= diff;
-    ax += diff;
-  }
-
-  /* Set popover position */
-  element.style.left = px + "px";
-  element.style.top = py + "px";
-
-  /* Set arrow position */
-  element.firstElementChild.style.left = ax + "px";
-
-  event.isPopover = true;
-}
-
-function showPopoverLeft(event, element, content) {
-  show(element, content);
-
-  var px = event.currentTarget.offsetLeft - element.offsetWidth - 16;
-  var py = event.currentTarget.offsetTop + (event.currentTarget.offsetHeight / 2) - (element.offsetHeight / 2);
-  var ay = (element.offsetHeight / 2) - (element.firstElementChild.offsetHeight / 2);
-  var diff = py + element.offsetHeight + 16 - element.offsetParent.offsetHeight;
-
-  if (py < 16) {
-    ay += py - 16;
-    py = 16;
-  }
-  if (diff > 0) {
-    py -= diff;
-    ay += diff;
-  }
-
-  /* Set popover position */
-  element.style.left = px + "px";
-  element.style.top = py + "px";
-
-  /* Set arrow position */
-  element.firstElementChild.style.top = ay + "px";
-
-  event.isPopover = true;
+  button.isPopover = true;
 }
 
 function hidePopover(event) {
@@ -77,6 +38,10 @@ function hidePopover(event) {
   if (currentPopover)
     currentPopover.style.display = 'none';
   currentPopover = null;
+
+  if (currentInstance)
+    currentInstance.destroy();
+  currentInstance = null;
 }
 
-export { showPopoverBottom, showPopoverLeft, hidePopover };
+export { showPopover, hidePopover };

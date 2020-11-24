@@ -7,6 +7,19 @@
 
   // Remove margin on arrow
   .arrow {
-    margin: 0;
+    margin: 0 !important;
+  }
+
+  &[data-popper-placement^="top"] {
+    @extend .bs-popover-top;
+  }
+  &[data-popper-placement^="right"] {
+    @extend .bs-popover-right;
+  }
+  &[data-popper-placement^="bottom"] {
+    @extend .bs-popover-bottom;
+  }
+  &[data-popper-placement^="left"] {
+    @extend .bs-popover-left;
   }
 }

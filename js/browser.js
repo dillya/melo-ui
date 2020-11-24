@@ -6,7 +6,7 @@
 import { openActionSheet } from './action.js';
 import { showAlert } from './alert.js';
 import { openModal } from './modal.js';
-import { showPopoverBottom, showPopoverLeft, hidePopover } from './popover.js';
+import { showPopover, hidePopover } from './popover.js';
 import { createNavLink, isMobile, parseIcon, parseCover, extractCover } from './utils.js';
 
 var melo = require('melo');
@@ -385,8 +385,9 @@ function setSort(event) {
 
 function openSort(event) {
   /* Add menu to popover */
-  showPopoverBottom(event, document.getElementById('browser-tab-popover'),
+  showPopover('bottom', this, document.getElementById('browser-tab-popover'),
     createSortMenu());
+  event.stopPropagation();
 }
 
 function openMore(event) {
@@ -499,8 +500,9 @@ function openMore(event) {
   if (isMobile())
     openActionSheet(list);
   else
-    showPopoverBottom(event, document.getElementById('browser-tab-popover'),
+    showPopover('bottom', this, document.getElementById('browser-tab-popover'),
       list);
+  event.stopPropagation();
 }
 
 /*
@@ -701,8 +703,10 @@ function openMediaAction(event) {
   if (isMobile())
     openActionSheet(list);
   else
-    showPopoverLeft(event, document.getElementById('browser-media-popover'),
+    showPopover("left", this, document.getElementById('browser-media-popover'),
       list);
+
+  event.stopPropagation();
 }
 
 /*
