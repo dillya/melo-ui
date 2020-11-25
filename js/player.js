@@ -91,7 +91,7 @@ function startEvent() {
       var ctrl = document.getElementById('playerbar-play');
       var ctrl2 = document.getElementById('player-play');
       if (ev.status.state === 1) { /* playing */
-        ctrl.innerHTML = ctrl2.innerHTML = parseIcon("fa:pause");
+        ctrl.innerHTML = ctrl2.innerHTML = parseIcon("fa:pause", "center", false);
         if (ev.status.streamState === 0 && !currentTimer)
           currentTimer = setInterval(function() {
             currentPosition += 1000;
@@ -104,7 +104,7 @@ function startEvent() {
             document.getElementById('player-progress').firstElementChild.style.width = percent + "%";
           }, 1000);
       } else { /* !playing */
-        ctrl.innerHTML = ctrl2.innerHTML = parseIcon("fa:play");
+        ctrl.innerHTML = ctrl2.innerHTML = parseIcon("fa:play", "center", false);
         if (currentTimer)
           clearInterval(currentTimer);
         if (ev.status.state !== 2)

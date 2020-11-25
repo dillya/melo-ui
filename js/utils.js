@@ -3,7 +3,7 @@
  * Copyright (C) 2020 Alexandre Dilly <dillya@sparod.com>
  */
 
-export function parseIcon(icon) {
+export function parseIcon(icon, align='left', inline=true) {
   if (icon.startsWith('svg:')) {
     var svg = icon.substring(4);
     return svg.slice(0, 4) + ' preserveAspectRatio="xMinYMin" ' + svg.slice(4);
@@ -17,7 +17,7 @@ export function parseIcon(icon) {
     icon = "";
 
   if (Iconify.iconExists(icon))
-    return Iconify.getSVG(icon, { 'data-align': 'left' });
+    return Iconify.getSVG(icon, { 'data-align': align, 'data-inline': inline });
   return '<span class="iconify" data-align="left" data-icon="' + icon + '"></span>';
 }
 
