@@ -21,6 +21,7 @@ document.getElementById('topbar-toggle').onclick = Sidebar.toggle;
 
 document.getElementById('sidebar-home').onclick = openHome;
 document.getElementById('sidebar-settings').onclick = openSettings;
+document.getElementById('sidebar-power').onclick = powerOff;
 document.getElementById('sidebar-playlists-new').onclick = Playlist.create;
 
 document.getElementById('browser-search').onclick = Browser.toggleSearch;
@@ -127,3 +128,14 @@ ws_ev_plist.onmessage = function (event) {
       document.getElementById('playlist-unload').parentElement.classList.add('d-none');
   }
 };
+
+function powerOff() {
+  var req = new WebSocket("ws://" + location.host + "/api/request/system");
+  req.binaryType = 'arraybuffer';
+  req.onopen = function (event) {
+    var c = { powerOff: true };
+    var cmd = melo.System.Request.create(c);
+
+    this.send(melo.System.Request.encode(cmd).finish());
+  };
+}
