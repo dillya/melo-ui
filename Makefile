@@ -5,7 +5,7 @@ uidir = $(DESTDIR)$(prefix)/share/melo/ui
 all: builddir/melo.js builddir/melo.css
 
 .npm:
-	npm install protobufjs browserify
+	npm install protobufjs protobufjs-cli browserify
 	touch $@
 
 builddir:
