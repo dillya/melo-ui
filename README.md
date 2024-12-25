@@ -52,7 +52,7 @@ Then, the **protobufjs** and **browserify** module should be installed with the
 following command:
 
 ```sh
-npm install protobufjs browserify
+npm install protobufjs@6.11.3 browserify
 ```
 
 ## Build
